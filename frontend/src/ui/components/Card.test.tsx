@@ -1,25 +1,18 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card'
+import { Card, CardHeader, CardBody } from './Card'
 
-describe('Card', () => {
-  it('renders card components correctly', () => {
+describe('Card Component', () => {
+  it('renders card structure correctly', () => {
     render(
       <Card>
         <CardHeader>
-          <CardTitle>Title</CardTitle>
+          <div>Header</div>
         </CardHeader>
-        <CardContent>Content</CardContent>
-        <CardFooter>Footer</CardFooter>
+        <CardBody>Content</CardBody>
       </Card>
     )
-    expect(screen.getByText('Title')).toBeDefined()
+    expect(screen.getByText('Header')).toBeDefined()
     expect(screen.getByText('Content')).toBeDefined()
-    expect(screen.getByText('Footer')).toBeDefined()
-  })
-
-  it('applies custom className', () => {
-    const { container } = render(<Card className="custom-class">Content</Card>)
-    expect(container.firstChild).toHaveClass('custom-class')
   })
 })

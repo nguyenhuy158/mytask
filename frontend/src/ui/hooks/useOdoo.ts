@@ -165,6 +165,16 @@ export const useOdoo = (searchTerm: string) => {
     }
   }, [])
 
+  const duplicateEnv = useCallback(async (id: number) => {
+    try {
+      const newEnv = await odooRepository.duplicateEnv(id)
+      setEnvs((prev) => [...prev, newEnv])
+      toast.success('Environment duplicated')
+    } catch {
+      toast.error('Failed to duplicate environment')
+    }
+  }, [])
+
   const testEnv = useCallback(async (id: number) => {
     try {
       const res = await odooRepository.testEnv(id)
@@ -224,6 +234,7 @@ export const useOdoo = (searchTerm: string) => {
     addEnv,
     updateEnv,
     deleteEnv,
+    duplicateEnv,
     testEnv,
     fetchReport,
     exportEnvs,

@@ -25,6 +25,21 @@ class OdooService:
     async def delete_env(self, env_id: int) -> Any:
         return await self.repository.delete_odoo_env(env_id)
 
+    async def duplicate_env(self, env_id: int) -> Any:
+        env = await self.repository.get_odoo_env_by_id(env_id)
+        if not env:
+            raise Exception("Environment not found")
+
+        new_env = OdooEnvSchema(
+            name=f"{env.name} (Copy)",
+            url=env.url,
+            db=env.db,
+            username=env.username,
+            password=env.password,
+            color=env.color,
+        )
+        return await self.repository.create_odoo_env(new_env)
+
     async def update_env(self, env_id: int, data: dict) -> Any:
         return await self.repository.update_odoo_env(env_id, data)
 

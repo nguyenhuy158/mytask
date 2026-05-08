@@ -25,6 +25,11 @@ export class AxiosOdooRepository implements IOdooRepository {
     await axios.delete(`${API_BASE}/envs/${id}`)
   }
 
+  async duplicateEnv(id: number): Promise<OdooEnv> {
+    const res = await axios.post(`${API_BASE}/envs/${id}/duplicate`)
+    return res.data
+  }
+
   async testEnv(id: number): Promise<{ status: string; message?: string }> {
     const res = await axios.get(`${API_BASE}/odoo/${id}/test`)
     return res.data

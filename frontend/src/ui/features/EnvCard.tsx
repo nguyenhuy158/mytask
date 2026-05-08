@@ -11,6 +11,7 @@ interface EnvCardProps {
   onUpdate: (id: number, data: Partial<OdooEnv>) => void
   onEdit: (env: OdooEnv) => void
   onDelete: (id: number) => void
+  onDuplicate: (id: number) => void
 }
 
 export const EnvCard: React.FC<EnvCardProps> = ({
@@ -20,6 +21,7 @@ export const EnvCard: React.FC<EnvCardProps> = ({
   onUpdate,
   onEdit,
   onDelete,
+  onDuplicate,
 }) => {
   return (
     <Card>
@@ -59,6 +61,9 @@ export const EnvCard: React.FC<EnvCardProps> = ({
           </Button>
           <Button variant="link" size="xs" onClick={() => onEdit(env)}>
             [EDIT]
+          </Button>
+          <Button variant="link" size="xs" onClick={() => onDuplicate(env.id)}>
+            [DUPLICATE]
           </Button>
           <Button variant="danger" onClick={() => onDelete(env.id)}>
             [DELETE]

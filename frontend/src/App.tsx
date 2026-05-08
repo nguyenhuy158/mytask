@@ -142,6 +142,7 @@ function App() {
     addEnv,
     updateEnv,
     deleteEnv,
+    duplicateEnv,
     testEnv,
     exportEnvs,
     importEnvs,
@@ -477,6 +478,7 @@ function App() {
                     onUpdate={updateEnv}
                     onEdit={setEditingEnv}
                     onDelete={handleDeleteEnv}
+                    onDuplicate={duplicateEnv}
                   />
                 ))}
               </div>

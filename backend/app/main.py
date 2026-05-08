@@ -569,6 +569,11 @@ async def update_env(
     return await service.update_env(id, data)
 
 
+@app.post("/envs/{id}/duplicate")
+async def duplicate_env(id: int, service: OdooService = Depends(get_odoo_service)):
+    return await service.duplicate_env(id)
+
+
 @app.delete("/envs/{id}")
 async def delete_env(id: int, service: OdooService = Depends(get_odoo_service)):
     await service.delete_env(id)

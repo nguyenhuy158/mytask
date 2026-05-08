@@ -4,9 +4,15 @@ import { Typography } from '../components/Typography'
 
 interface ApprovalSpeedChartProps {
   report: IDisbursementReport[]
+  minDate?: number
+  maxDate?: number
 }
 
-export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({ report }) => {
+export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
+  report,
+  minDate: propMinDate,
+  maxDate: propMaxDate,
+}) => {
   const chartData = useMemo(() => {
     return report
       .filter((r) => r.approve_date && r.approval_duration !== undefined)
@@ -19,7 +25,7 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({ report }
       .sort((a, b) => a.date - b.date)
   }, [report])
 
-  if (chartData.length < 2) return null
+  if (chartData.length < 1) return null
 
   const margin = { top: 20, right: 20, bottom: 60, left: 60 }
   const width = 1000
@@ -27,11 +33,18 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({ report }
   const innerWidth = width - margin.left - margin.right
   const innerHeight = height - margin.top - margin.bottom
 
-  const minDate = chartData[0].date
-  const maxDate = chartData[chartData.length - 1].date
+  const dataMinDate = chartData[0].date
+  const dataMaxDate = chartData[chartData.length - 1].date
+
+  const minDate = propMinDate ?? dataMinDate
+  const maxDate = propMaxDate ?? dataMaxDate
   const maxDuration = Math.max(...chartData.map((d) => d.duration)) * 1.1 || 1
 
-  const getX = (date: number) => ((date - minDate) / (maxDate - minDate)) * innerWidth + margin.left
+  const getX = (date: number) => {
+    if (maxDate === minDate) return innerWidth / 2 + margin.left
+    const pos = ((date - minDate) / (maxDate - minDate)) * innerWidth + margin.left
+    return Math.max(margin.left, Math.min(width - margin.right, pos))
+  }
   const getY = (duration: number) =>
     innerHeight - (duration / maxDuration) * innerHeight + margin.top
 

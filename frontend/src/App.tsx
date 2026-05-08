@@ -83,7 +83,7 @@ function App() {
   })
   const [showLogStream, setShowLogStream] = useState(() => {
     const saved = localStorage.getItem('showLogStream')
-    return saved !== 'false' // Default to true
+    return saved === 'true' // Default to false
   })
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')

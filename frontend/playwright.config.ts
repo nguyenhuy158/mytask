@@ -18,16 +18,17 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'cd ../backend && uv run uvicorn app.main:app --port 8000',
+      command:
+        'cd ../backend && DATABASE_URL="file:./test.db" uv run prisma db push --accept-data-loss && DATABASE_URL="file:./test.db" uv run uvicorn app.main:app --port 8000',
       url: 'http://localhost:8000/tasks',
       reuseExistingServer: !process.env.CI,
-      timeout: 120000,
+      timeout: 300000,
     },
     {
       command: 'pnpm dev --port 3000',
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
-      timeout: 120000,
+      timeout: 300000,
     },
   ],
   projects: [

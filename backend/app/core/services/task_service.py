@@ -40,7 +40,9 @@ class TaskService:
         await self.repository.add_audit_log(
             "TASK_CREATED", f"Task '{db_task.name}' created"
         )
-        await self.broadcast.broadcast({"type": "TASK_CREATED", "task": db_task.dict()})
+        await self.broadcast.broadcast(
+            {"type": "TASK_CREATED", "task": db_task.model_dump()}
+        )
         return db_task
 
     async def update_task_status(self, task_id: int, status: str) -> Any:

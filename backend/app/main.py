@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,20 +43,10 @@ backup_service = BackupService(repository=prisma_adapter, storage=s3_adapter)
 odoo_service = OdooService(repository=prisma_adapter, odoo_port=odoo_adapter)
 scheduler = SchedulerAdapter(task_service=task_service, backup_service=backup_service)
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.include_router(api_router)
 
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await connect_db()
     scheduler.start()
     cron_expr = await backup_service.get_backup_cron()
@@ -67,8 +58,17 @@ async def startup_event():
         ResponseMessage.SYSTEM_STARTUP_MSG,
         translator.translate(ResponseMessage.SYSTEM_STARTUP_MSG, lang="en"),
     )
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
+    yield
     await disconnect_db()
+
+
+app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(api_router)

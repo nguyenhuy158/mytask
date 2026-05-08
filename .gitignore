@@ -10,12 +10,18 @@ __pycache__/
 venv/
 ENV/
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
+uv.lock
 
 # Node/Frontend
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
+.pnpm-store/
+frontend/.pnpm-store/
 dist-ssr/
 *.local
 .eslintcache
@@ -27,6 +33,8 @@ playwright/.cache/
 
 # Docker
 .dockerignore
+**/Dockerfile*
+!**/Dockerfile.prod
 
 # Environment variables (IMPORTANT)
 .env
@@ -34,8 +42,9 @@ backend/.env
 frontend/.env
 *.env.local
 
-# Migration files (Alembic)
+# Migration files (Alembic/Prisma)
 backend/alembic.ini
+**/prisma/migrations/
 
 # Build files
 *.log
@@ -44,3 +53,5 @@ backend/alembic.ini
 # Database
 backend/*.db
 backend/backups/
+*.db
+*.db-journal

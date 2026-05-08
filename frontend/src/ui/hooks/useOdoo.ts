@@ -1,15 +1,14 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Cron } from '../../domain/models/Cron'
-import type { OdooEnv, DisbursementReport } from '../../domain/models/OdooEnv'
+import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { odooRepository } from '../../adapters/api/AxiosOdooRepository'
 import { sortCrons, filterCrons } from '../../domain/services/CronService'
 import toast from 'react-hot-toast'
+
 export const useOdoo = (searchTerm: string) => {
-  const [envs, setEnvs] = useState<OdooEnv[]>([])
-  const [crons, setCrons] = useState<Cron[]>([])
-  const [report, setReport] = useState<DisbursementReport[]>([])
+  const queryClient = useQueryClient()
   const [selectedEnvId, setSelectedEnvId] = useState<number | null>(null)
-  const [loading, setLoading] = useState<string | null>(null)
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Cron | 'interval' | null
     direction: 'asc' | 'desc'
@@ -17,114 +16,82 @@ export const useOdoo = (searchTerm: string) => {
     key: null,
     direction: 'asc',
   })
-  const fetchEnvs = useCallback(async () => {
-    try {
-      const data = await odooRepository.getEnvs()
-      setEnvs(data)
-      if (data.length > 0 && !selectedEnvId) {
-        const defaultEnv = data.find((e) => e.is_default)
-        if (defaultEnv) {
-          setSelectedEnvId(defaultEnv.id)
-        }
-      }
-    } catch {
-      toast.error('Failed to fetch environments')
-    }
-  }, [selectedEnvId])
-  const fetchCrons = useCallback(async (envId: number, silent = false) => {
-    if (!silent) setLoading('crons')
-    try {
-      const data = await odooRepository.getCrons(envId)
-      setCrons(data)
-    } catch (err) {
-      console.error(`Failed to fetch crons for env ${envId}:`, err)
-      toast.error('Failed to fetch crons')
-      throw err
-    } finally {
-      if (!silent) setLoading(null)
-    }
-  }, [])
-  const fetchReport = useCallback(async (envId: number, silent = false) => {
-    if (!silent) setLoading('report')
-    try {
-      const data = await odooRepository.getDisbursementReport(envId)
-      setReport(data)
-    } catch (err: unknown) {
-      console.error(`Failed to fetch report for env ${envId}:`, err)
-      let message = 'Failed to fetch report'
-      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string }
-      if (axiosErr.response?.data?.detail) {
-        message = axiosErr.response.data.detail
-      } else if (axiosErr.message) {
-        message = axiosErr.message
-      }
-      toast.error(message)
-      throw err
-    } finally {
-      if (!silent) setLoading(null)
-    }
-  }, [])
-  const toggleCron = useCallback(
-    async (cronId: number, active: boolean) => {
-      if (!selectedEnvId) return
-      try {
-        await odooRepository.toggleCron(selectedEnvId, cronId, active)
-        setCrons((prev) => prev.map((c) => (c.id === cronId ? { ...c, active } : c)))
-        toast.success(active ? 'Cron activated' : 'Cron deactivated')
-      } catch {
-        toast.error('Failed to toggle cron')
-      }
-    },
-    [selectedEnvId],
-  )
-  const runCron = useCallback(
-    async (cronId: number) => {
-      if (!selectedEnvId) return
-      try {
-        await odooRepository.runCron(selectedEnvId, cronId)
-        toast.success('Cron triggered successfully')
-      } catch {
-        toast.error('Failed to run cron')
-      }
-    },
-    [selectedEnvId],
-  )
+
+  const { data: envs = [] } = useQuery({
+    queryKey: ['odooEnvs'],
+    queryFn: () => odooRepository.getEnvs(),
+  })
+
   useEffect(() => {
-    const init = async () => {
-      await fetchEnvs()
+    if (envs.length > 0 && !selectedEnvId) {
+      const defaultEnv = envs.find((e: OdooEnv) => e.is_default)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (defaultEnv) setSelectedEnvId(defaultEnv.id)
     }
-    init()
-  }, [fetchEnvs])
-  useEffect(() => {
-    let isMounted = true
-    const init = async () => {
-      if (selectedEnvId) {
-        console.log(`Switching to environment: ${selectedEnvId}`)
-        setCrons([])
-        setReport([])
-        setLoading('fetching')
-        try {
-          await Promise.all([fetchCrons(selectedEnvId, true), fetchReport(selectedEnvId, true)])
-          console.log('Successfully fetched environment data')
-        } catch (err) {
-          console.error('Environment init failed:', err)
-        } finally {
-          if (isMounted) setLoading(null)
-        }
-      }
-    }
-    init()
-    return () => {
-      isMounted = false
-    }
-  }, [selectedEnvId, fetchCrons, fetchReport])
+  }, [envs, selectedEnvId])
+
+  const { data: crons = [], isLoading: cronsLoading } = useQuery({
+    queryKey: ['odooCrons', selectedEnvId],
+    queryFn: () => (selectedEnvId ? odooRepository.getCrons(selectedEnvId) : Promise.resolve([])),
+    enabled: !!selectedEnvId,
+  })
+
+  const { data: report = [], isLoading: reportLoading } = useQuery({
+    queryKey: ['odooReport', selectedEnvId],
+    queryFn: () =>
+      selectedEnvId ? odooRepository.getDisbursementReport(selectedEnvId) : Promise.resolve([]),
+    enabled: !!selectedEnvId,
+  })
+
+  const toggleCronMutation = useMutation({
+    mutationFn: ({ id, active }: { id: number; active: boolean }) =>
+      selectedEnvId ? odooRepository.toggleCron(selectedEnvId, id, active) : Promise.reject(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['odooCrons', selectedEnvId] })
+      toast.success('Cron updated')
+    },
+  })
+
+  const runCronMutation = useMutation({
+    mutationFn: (id: number) =>
+      selectedEnvId ? odooRepository.runCron(selectedEnvId, id) : Promise.reject(),
+    onSuccess: () => toast.success('Cron triggered'),
+  })
+
+  const addEnvMutation = useMutation({
+    mutationFn: (env: Partial<OdooEnv>) => odooRepository.addEnv(env),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+      toast.success('Environment added')
+    },
+  })
+
+  const updateEnvMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<OdooEnv> }) =>
+      odooRepository.updateEnv(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+      toast.success('Environment updated')
+    },
+  })
+
+  const deleteEnvMutation = useMutation({
+    mutationFn: (id: number) => odooRepository.deleteEnv(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+      toast.success('Environment deleted')
+    },
+  })
+
   const sortedCrons = useMemo(() => {
     if (!sortConfig.key) return crons
     return sortCrons(crons, sortConfig.key, sortConfig.direction)
   }, [crons, sortConfig])
+
   const filteredCrons = useMemo(() => {
     return filterCrons(sortedCrons, searchTerm)
   }, [sortedCrons, searchTerm])
+
   const requestSort = (key: keyof Cron | 'interval') => {
     let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -132,118 +99,47 @@ export const useOdoo = (searchTerm: string) => {
     }
     setSortConfig({ key, direction })
   }
-  const addEnv = useCallback(async (env: Partial<OdooEnv>) => {
-    try {
-      const newEnv = await odooRepository.addEnv(env)
-      setEnvs((prev) => [...prev, newEnv])
-      toast.success('Environment added')
-    } catch {
-      toast.error('Failed to add environment')
-    }
-  }, [])
-  const updateEnv = useCallback(async (id: number, data: Partial<OdooEnv>) => {
-    try {
-      const updated = await odooRepository.updateEnv(id, data)
-      setEnvs((prev) => prev.map((e) => (e.id === id ? updated : e)))
-      toast.success('Environment updated')
-    } catch {
-      toast.error('Failed to update environment')
-    }
-  }, [])
-  const deleteEnv = useCallback(async (id: number) => {
-    if (!confirm('Delete this environment?')) return
-    try {
-      await odooRepository.deleteEnv(id)
-      setEnvs((prev) => prev.filter((e) => e.id !== id))
-      toast.success('Environment deleted')
-    } catch {
-      toast.error('Failed to delete environment')
-    }
-  }, [])
-  const duplicateEnv = useCallback(async (id: number) => {
-    try {
-      const newEnv = await odooRepository.duplicateEnv(id)
-      setEnvs((prev) => [...prev, newEnv])
-      toast.success('Environment duplicated')
-    } catch {
-      toast.error('Failed to duplicate environment')
-    }
-  }, [])
-  const setDefaultEnv = useCallback(async (id: number) => {
-    try {
-      await odooRepository.setDefaultEnv(id)
-      setEnvs((prev) =>
-        prev.map((e) => ({
-          ...e,
-          is_default: e.id === id,
-        })),
-      )
-      toast.success('Default environment set')
-    } catch {
-      toast.error('Failed to set default environment')
-    }
-  }, [])
-  const testEnv = useCallback(async (id: number) => {
-    try {
-      const res = await odooRepository.testEnv(id)
-      if (res.status === 'success') {
-        toast.success(`Connection successful!`)
-        return true
-      } else {
-        toast.error(`Connection failed: ${res.message}`)
-        return false
-      }
-    } catch {
-      toast.error('Failed to test connection')
-      return false
-    }
-  }, [])
-  const exportEnvs = useCallback(async () => {
-    try {
-      const data = await odooRepository.exportEnvs()
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `odoo-envs-${new Date().toISOString().split('T')[0]}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-      toast.success('Environments exported')
-    } catch {
-      toast.error('Failed to export environments')
-    }
-  }, [])
-  const importEnvs = useCallback(async (envsData: Partial<OdooEnv>[]) => {
-    try {
-      const imported = await odooRepository.importEnvs(envsData)
-      setEnvs((prev) => [...prev, ...imported])
-      toast.success(`Imported ${imported.length} environments`)
-    } catch {
-      toast.error('Failed to import environments')
-    }
-  }, [])
+
   return {
     envs,
-    setEnvs,
     crons,
     report,
     selectedEnvId,
     setSelectedEnvId,
     filteredCrons,
-    loading,
+    loading: cronsLoading || reportLoading ? 'loading' : null,
     sortConfig,
     requestSort,
-    toggleCron,
-    runCron,
-    fetchEnvs,
-    addEnv,
-    updateEnv,
-    deleteEnv,
-    duplicateEnv,
-    setDefaultEnv,
-    testEnv,
-    fetchReport,
-    exportEnvs,
-    importEnvs,
+    toggleCron: (id: number, active: boolean) => toggleCronMutation.mutate({ id, active }),
+    runCron: (id: number) => runCronMutation.mutate(id),
+    fetchEnvs: () => queryClient.invalidateQueries({ queryKey: ['odooEnvs'] }),
+    addEnv: (env: Partial<OdooEnv>) => addEnvMutation.mutate(env),
+    updateEnv: (id: number, data: Partial<OdooEnv>) => updateEnvMutation.mutate({ id, data }),
+    deleteEnv: (id: number) => deleteEnvMutation.mutate(id),
+    duplicateEnv: async (id: number) => {
+      await odooRepository.duplicateEnv(id)
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+    },
+    setDefaultEnv: async (id: number) => {
+      await odooRepository.setDefaultEnv(id)
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+    },
+    testEnv: async (id: number) => {
+      const res = await odooRepository.testEnv(id)
+      return res.status === 'success'
+    },
+    exportEnvs: async () => {
+      const data = await odooRepository.exportEnvs()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `odoo-envs.json`
+      a.click()
+    },
+    importEnvs: async (data: Partial<OdooEnv>[]) => {
+      await odooRepository.importEnvs(data)
+      queryClient.invalidateQueries({ queryKey: ['odooEnvs'] })
+    },
   }
 }

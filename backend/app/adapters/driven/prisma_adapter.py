@@ -17,7 +17,7 @@ class PrismaAdapter(RepositoryPort):
         return await db.taskconfig.find_many()
 
     async def create_task(self, task: TaskSchema) -> Any:
-        return await db.taskconfig.create(data=task.dict())
+        return await db.taskconfig.create(data=task.model_dump())
 
     async def update_task_status(self, task_id: int, status: str) -> Any:
         return await db.taskconfig.update(
@@ -66,7 +66,7 @@ class PrismaAdapter(RepositoryPort):
         return await db.s3config.find_unique(where={"id": config_id})
 
     async def create_s3_config(self, config: S3ConfigSchema) -> Any:
-        return await db.s3config.create(data=config.dict())
+        return await db.s3config.create(data=config.model_dump())
 
     async def delete_s3_config(self, config_id: int) -> Any:
         return await db.s3config.delete(where={"id": config_id})
@@ -80,7 +80,7 @@ class PrismaAdapter(RepositoryPort):
         return await db.webhookconfig.find_unique(where={"id": webhook_id})
 
     async def create_webhook(self, webhook: WebhookConfigSchema) -> Any:
-        return await db.webhookconfig.create(data=webhook.dict())
+        return await db.webhookconfig.create(data=webhook.model_dump())
 
     async def delete_webhook(self, webhook_id: int) -> Any:
         return await db.webhookconfig.delete(where={"id": webhook_id})
@@ -92,7 +92,7 @@ class PrismaAdapter(RepositoryPort):
         return await db.odooenv.find_unique(where={"id": env_id})
 
     async def create_odoo_env(self, env: OdooEnvSchema) -> Any:
-        return await db.odooenv.create(data=env.dict())
+        return await db.odooenv.create(data=env.model_dump())
 
     async def delete_odoo_env(self, env_id: int) -> Any:
         return await db.odooenv.delete(where={"id": env_id})
@@ -130,7 +130,9 @@ class PrismaAdapter(RepositoryPort):
         return await db.taskconfig.find_many(where={"cron_expression": {"not": None}})
 
     async def create_note(self, note: Any) -> Any:
-        return await db.note.create(data=note.dict() if hasattr(note, "dict") else note)
+        return await db.note.create(
+            data=note.model_dump() if hasattr(note, "model_dump") else note
+        )
 
     async def get_notes(
         self, task_id: int | None = None, project_id: int | None = None
@@ -151,7 +153,7 @@ class PrismaAdapter(RepositoryPort):
         )
 
     async def create_file_attachment(self, file: FileAttachmentSchema) -> Any:
-        return await db.fileattachment.create(data=file.dict())
+        return await db.fileattachment.create(data=file.model_dump())
 
     async def get_attachment_by_id(self, file_id: int) -> Any | None:
         return await db.fileattachment.find_unique(where={"id": file_id})
@@ -165,7 +167,7 @@ class PrismaAdapter(RepositoryPort):
         return await db.notificationconfig.find_many()
 
     async def create_notification_config(self, config: NotificationConfigSchema) -> Any:
-        return await db.notificationconfig.create(data=config.dict())
+        return await db.notificationconfig.create(data=config.model_dump())
 
     async def delete_notification_config(self, config_id: int) -> Any:
         return await db.notificationconfig.delete(where={"id": config_id})

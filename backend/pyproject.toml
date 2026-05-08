@@ -1,3 +1,25 @@
+[project]
+name = "mytask-backend"
+version = "0.1.0"
+description = "Backend for mytask"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "apscheduler",
+    "requests",
+    "python-dotenv",
+    "websockets",
+    "slowapi",
+    "prisma",
+    "ruff",
+    "boto3",
+    "python-multipart",
+    "pydantic-settings",
+    "pydantic>=2.0.0",
+]
+
 [tool.ruff]
 line-length = 88
 target-version = "py310"
@@ -26,6 +48,15 @@ line-ending = "auto"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+addopts = "--cov=app --cov-report=term-missing --cov-report=html"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
 
 [dependency-groups]
 dev = [
@@ -33,4 +64,6 @@ dev = [
     "prisma>=0.15.0",
     "pytest>=9.0.3",
     "pytest-asyncio>=1.3.0",
+    "pytest-cov>=6.0.0",
+    "pre-commit>=4.1.0",
 ]

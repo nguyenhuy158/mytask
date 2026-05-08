@@ -1,4 +1,4 @@
-.PHONY: up down restart build logs ps clean help setup-host setup-dev dev-backend dev-frontend dev-local lint format test test-backend test-frontend test-e2e
+.PHONY: up down restart build logs ps clean help setup-host setup-dev dev-backend dev-frontend dev-local lint format test test-backend test-frontend test-e2e cov-backend cov-frontend cov
 
 help:
 	@echo "Available commands:"
@@ -20,6 +20,9 @@ help:
 	@echo "  make test-backend - Run backend tests"
 	@echo "  make test-frontend - Run frontend unit tests"
 	@echo "  make test-e2e     - Run E2E tests (requires services to be running)"
+	@echo "  make cov-backend  - Open backend coverage report"
+	@echo "  make cov-frontend - Open frontend coverage report"
+	@echo "  make cov          - Open both coverage reports"
 
 up:
 	docker-compose up -d
@@ -93,3 +96,11 @@ test-e2e:
 	cd frontend && pnpm test:e2e
 
 test: test-backend test-frontend test-e2e
+
+cov-backend:
+	open backend/htmlcov/index.html
+
+cov-frontend:
+	open frontend/coverage/index.html
+
+cov: cov-backend cov-frontend

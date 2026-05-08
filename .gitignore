@@ -9,11 +9,17 @@ __pycache__/
 .venv/
 venv/
 ENV/
+
+# Coverage and tests
 .pytest_cache/
 .ruff_cache/
 .coverage
 htmlcov/
-uv.lock
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 
 # Node/Frontend
 node_modules/
@@ -26,10 +32,9 @@ dist-ssr/
 *.local
 .eslintcache
 .stylelintcache
-test-results/
-playwright-report/
-blob-report/
-playwright/.cache/
+
+# Pre-commit
+.pre-commit/
 
 # Docker
 .dockerignore

@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-lint
+        name: Backend Lint
+        entry: make lint
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: backend-test
+        name: Backend Tests
+        entry: make test-backend
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: frontend-test
+        name: Frontend Tests
+        entry: make test-frontend
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

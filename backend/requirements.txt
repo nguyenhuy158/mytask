@@ -9,3 +9,5 @@ prisma
 ruff
 boto3
 python-multipart
+pydantic-settings
+pydantic>=2.0.0

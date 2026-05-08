@@ -1,3 +1,5 @@
+import tailwindAnimate from 'tailwindcss-animate'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -5,7 +7,40 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--color-primary)',
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary-shadcn))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent-shadcn))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        'brand-primary': 'var(--color-primary)',
         'on-primary': 'var(--color-on-primary)',
         ink: 'var(--color-ink)',
         charcoal: 'var(--color-charcoal)',
@@ -17,7 +52,7 @@ export default {
         'surface-soft': 'var(--color-surface-soft)',
         'surface-card': 'var(--color-surface-card)',
         hairline: 'var(--color-hairline)',
-        accent: '#007aff',
+        'brand-accent': '#007aff',
         success: '#30d158',
         danger: '#ff3b30',
         warning: '#ff9f0a',
@@ -41,5 +76,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindAnimate],
 }

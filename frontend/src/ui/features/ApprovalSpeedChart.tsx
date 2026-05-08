@@ -25,6 +25,26 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
       .sort((a, b) => a.date - b.date)
   }, [report])
 
+  // Generate X-axis ticks (unique dates)
+  const xTicks = useMemo(() => {
+    if (chartData.length === 0) return []
+
+    const uniqueDates = Array.from(new Set(chartData.map((d) => d.dateStr)))
+
+    // If we have a lot of unique dates, sample them
+    if (uniqueDates.length > 10) {
+      const sampled = []
+      const step = (uniqueDates.length - 1) / 7
+      for (let i = 0; i < 8; i++) {
+        sampled.push(uniqueDates[Math.round(i * step)])
+      }
+      return sampled.map((ds) => chartData.find((d) => d.dateStr === ds)!)
+    }
+
+    // Otherwise show all unique dates
+    return uniqueDates.map((ds) => chartData.find((d) => d.dateStr === ds)!)
+  }, [chartData])
+
   if (chartData.length < 1) return null
 
   const margin = { top: 20, right: 20, bottom: 60, left: 60 }
@@ -62,14 +82,6 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
   const areaPath =
     linePath +
     ` L ${points[points.length - 1].x} ${innerHeight + margin.top} L ${points[0].x} ${innerHeight + margin.top} Z`
-
-  // Generate X-axis ticks (approx 5-10)
-  const xTicks = []
-  const tickCount = 8
-  for (let i = 0; i < tickCount; i++) {
-    const index = Math.floor((i / (tickCount - 1)) * (chartData.length - 1))
-    xTicks.push(chartData[index])
-  }
 
   // Generate Y-axis ticks
   const yTicks = [0, maxDuration / 4, maxDuration / 2, (maxDuration * 3) / 4, maxDuration]

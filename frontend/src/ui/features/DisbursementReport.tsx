@@ -7,6 +7,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Pagination,
 } from '../components/Table'
 import { Typography } from '../components/Typography'
 import { Badge } from '../components/Badge'
@@ -28,6 +29,9 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
   envUrl,
 }) => {
   const [range, setRange] = useState<FilterRange>('3d')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
   const [sortConfig, setSortConfig] = useState<{
     key: keyof IDisbursementReport | 'approve_uid_name'
     direction: 'asc' | 'desc'
@@ -152,6 +156,13 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
     return sorted
   }, [filteredReport, sortConfig])
 
+  const paginatedReport = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    return sortedReport.slice(startIndex, startIndex + pageSize)
+  }, [sortedReport, currentPage])
+
+  const totalPages = Math.ceil(sortedReport.length / pageSize)
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
@@ -197,6 +208,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
     }))
+    setCurrentPage(1)
   }
 
   const getSortIcon = (key: keyof IDisbursementReport | 'approve_uid_name') => {
@@ -229,7 +241,10 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             <Select
               value={range}
               options={rangeOptions}
-              onChange={(val) => setRange(val as FilterRange)}
+              onChange={(val) => {
+                setRange(val as FilterRange)
+                setCurrentPage(1)
+              }}
               className="w-56"
             />
           </div>
@@ -429,7 +444,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
               <TableHeaderCell align="right">Action</TableHeaderCell>
             </TableHeader>
             <TableBody>
-              {sortedReport.map((rec) => (
+              {paginatedReport.map((rec) => (
                 <TableRow key={rec.id}>
                   <TableCell className="font-bold uppercase">{rec.name}</TableCell>
                   <TableCell className="text-ash text-[10px] font-bold uppercase truncate max-w-[150px]">
@@ -478,6 +493,11 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
               )}
             </TableBody>
           </Table>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

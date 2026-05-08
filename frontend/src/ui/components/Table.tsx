@@ -63,3 +63,43 @@ export const TableRow: React.FC<{ children: React.ReactNode; className?: string 
   children,
   className = '',
 }) => <tr className={`hover:bg-surface-soft transition-colors text-xs ${className}`}>{children}</tr>
+
+interface PaginationProps {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  className?: string
+}
+
+export const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = '',
+}) => {
+  if (totalPages <= 1) return null
+
+  return (
+    <div className={`flex items-center justify-between py-4 ${className}`}>
+      <div className="text-[10px] font-bold text-ash uppercase tracking-widest">
+        Page {currentPage} of {totalPages}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 border border-ink text-[10px] font-bold uppercase tracking-tighter disabled:opacity-30 disabled:cursor-not-allowed hover:bg-ink hover:text-on-primary transition-all"
+        >
+          [PREV]
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 border border-ink text-[10px] font-bold uppercase tracking-tighter disabled:opacity-30 disabled:cursor-not-allowed hover:bg-ink hover:text-on-primary transition-all"
+        >
+          [NEXT]
+        </button>
+      </div>
+    </div>
+  )
+}

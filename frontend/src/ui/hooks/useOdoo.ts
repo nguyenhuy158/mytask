@@ -50,9 +50,18 @@ export const useOdoo = (searchTerm: string) => {
     try {
       const data = await odooRepository.getDisbursementReport(envId)
       setReport(data)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(`Failed to fetch report for env ${envId}:`, err)
-      toast.error('Failed to fetch report')
+      let message = 'Failed to fetch report'
+
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string }
+      if (axiosErr.response?.data?.detail) {
+        message = axiosErr.response.data.detail
+      } else if (axiosErr.message) {
+        message = axiosErr.message
+      }
+
+      toast.error(message)
       throw err
     } finally {
       if (!silent) setLoading(null)

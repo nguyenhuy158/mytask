@@ -1,11 +1,9 @@
 import React from 'react'
-
 interface TypographyProps {
   children: React.ReactNode
   variant?: 'h1' | 'h2' | 'h3' | 'body' | 'caption' | 'code' | 'label'
   className?: string
 }
-
 export const Typography: React.FC<TypographyProps> = ({
   children,
   variant = 'body',
@@ -20,8 +18,6 @@ export const Typography: React.FC<TypographyProps> = ({
     code: 'text-[11px] font-bold tabular-nums',
     label: 'text-[10px] font-bold text-ash uppercase tracking-widest',
   }
-
   const Tag = variant === 'h1' ? 'h1' : variant === 'h2' ? 'h2' : variant === 'h3' ? 'h3' : 'span'
-
   return <Tag className={`${styles[variant]} ${className}`}>{children}</Tag>
 }

@@ -73,7 +73,6 @@ class OdooAdapter(OdooPort):
     def execute_script(
         self, url: str, db: str, username: str, password: str, script: str
     ) -> Any:
-        # script format: "model,method,args,kwargs" (JSON string for args/kwargs)
         import json
 
         try:
@@ -82,7 +81,6 @@ class OdooAdapter(OdooPort):
             method = parts[1]
             args = json.loads(parts[2]) if len(parts) > 2 else []
             kwargs = json.loads(parts[3]) if len(parts) > 3 else {}
-
             models, uid = self._get_models(url, db, username, password)
             return models.execute_kw(db, uid, password, model, method, args, kwargs)
         except Exception as e:
@@ -146,13 +144,9 @@ class OdooAdapter(OdooPort):
                 if "Object sale.disbursement doesn't exist" in str(e):
                     return []
                 raise e
-
             for rec in records:
-                # Project info is not directly on sale.disbursement
                 rec["project_name"] = "N/A"
-
                 try:
-                    # Odoo returns UTC strings: 'YYYY-MM-DD HH:MM:SS'
                     confirm = datetime.strptime(
                         rec["confirm_date"], "%Y-%m-%d %H:%M:%S"
                     )
@@ -163,7 +157,6 @@ class OdooAdapter(OdooPort):
                     rec["approval_duration"] = duration
                 except (ValueError, TypeError, KeyError):
                     rec["approval_duration"] = 0.0
-
             return records
         except Exception as e:
             print(f"Error fetching disbursement report: {e}")

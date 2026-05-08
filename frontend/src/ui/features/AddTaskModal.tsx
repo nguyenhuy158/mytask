@@ -4,14 +4,12 @@ import type { Task } from '../../domain/models/Task'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Button } from '../components/Button'
 import { Select } from '../components/Select'
-
 interface AddTaskModalProps {
   onClose: () => void
   onAdd: (task: Partial<Task>) => void
   tasks: Task[]
   envs: OdooEnv[]
 }
-
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, tasks, envs }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -25,13 +23,11 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
     odoo_project_id: null as number | null,
     odoo_task_id: null as number | null,
   })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onAdd(formData)
     onClose()
   }
-
   return (
     <div className="fixed inset-0 z-[400] bg-canvas/90 backdrop-blur-md flex items-center justify-center p-8">
       <div className="w-full max-w-lg bg-canvas border border-ink p-12 space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
@@ -41,7 +37,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
             Define the parameters of the new execution unit.
           </p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -56,7 +51,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Description
@@ -70,7 +64,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
-
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -99,7 +92,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
               />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -131,7 +123,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
               />
             </div>
           </div>
-
           <div className="pt-6 border-t border-hairline space-y-6">
             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">
               External_Integration: Odoo_Timesheets
@@ -193,7 +184,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
               </div>
             )}
           </div>
-
           <div className="flex gap-4 pt-4">
             <Button type="submit" fullWidth icon={<Plus size={16} />}>
               [CREATE_TASK]

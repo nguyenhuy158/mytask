@@ -12,7 +12,6 @@ import {
 } from '../components/Table'
 import { Button } from '../components/Button'
 import { Skeleton } from '../components/Skeleton'
-
 interface CronTableProps {
   crons: Cron[]
   loading: boolean
@@ -22,7 +21,6 @@ interface CronTableProps {
   onRun: (id: number) => void
   selectedIndex?: number
 }
-
 export const CronTable: React.FC<CronTableProps> = ({
   crons,
   loading,
@@ -34,19 +32,15 @@ export const CronTable: React.FC<CronTableProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
-
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null
     return sortConfig.direction === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />
   }
-
   const paginatedCrons = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize
     return crons.slice(startIndex, startIndex + pageSize)
   }, [crons, currentPage])
-
   const totalPages = Math.ceil(crons.length / pageSize)
-
   if (loading) {
     return (
       <Table>
@@ -85,7 +79,6 @@ export const CronTable: React.FC<CronTableProps> = ({
       </Table>
     )
   }
-
   return (
     <>
       <Table>

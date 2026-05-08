@@ -9,7 +9,6 @@ import type {
   SchedulerHealth,
 } from '../../domain/models/System'
 import toast from 'react-hot-toast'
-
 export const useSystem = () => {
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
   const [s3Configs, setS3Configs] = useState<S3Config[]>([])
@@ -21,7 +20,6 @@ export const useSystem = () => {
   const [defaultBackupTarget, setDefaultBackupTarget] = useState('local')
   const [schedulerHealth, setSchedulerHealth] = useState<SchedulerHealth | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
-
   const fetchWebhooks = useCallback(async () => {
     try {
       const data = await systemRepository.getWebhooks()
@@ -30,7 +28,6 @@ export const useSystem = () => {
       console.error('Failed to fetch webhooks', err)
     }
   }, [])
-
   const fetchS3Configs = useCallback(async () => {
     try {
       const data = await systemRepository.getS3Configs()
@@ -39,7 +36,6 @@ export const useSystem = () => {
       toast.error('Failed to fetch S3 configurations')
     }
   }, [])
-
   const fetchAuditLogs = useCallback(async () => {
     try {
       const data = await systemRepository.getAuditLogs()
@@ -48,7 +44,6 @@ export const useSystem = () => {
       console.error('Failed to fetch audit logs', err)
     }
   }, [])
-
   const fetchConfig = useCallback(async () => {
     try {
       const data = await systemRepository.getConfig()
@@ -57,7 +52,6 @@ export const useSystem = () => {
       console.error('Failed to fetch config', err)
     }
   }, [])
-
   const fetchBackupCron = useCallback(async () => {
     try {
       const cron = await systemRepository.getBackupCron()
@@ -66,7 +60,6 @@ export const useSystem = () => {
       console.error('Failed to fetch backup cron', err)
     }
   }, [])
-
   const fetchDefaultBackupTarget = useCallback(async () => {
     try {
       const target = await systemRepository.getDefaultBackupTarget()
@@ -75,7 +68,6 @@ export const useSystem = () => {
       console.error('Failed to fetch default backup target', err)
     }
   }, [])
-
   const fetchBackups = useCallback(async () => {
     try {
       const data = await systemRepository.getBackups()
@@ -84,11 +76,9 @@ export const useSystem = () => {
       console.error('Failed to fetch backups', err)
     }
   }, [])
-
   const downloadBackup = useCallback(async (filename: string) => {
     await systemRepository.downloadBackup(filename)
   }, [])
-
   const restoreBackup = useCallback(async (filename: string) => {
     if (!confirm(`Restore from ${filename}? Current database will be overwritten.`)) return
     try {
@@ -102,7 +92,6 @@ export const useSystem = () => {
       setLoading(null)
     }
   }, [])
-
   const deleteBackup = useCallback(
     async (filename: string) => {
       if (!confirm('Delete this backup?')) return
@@ -116,7 +105,6 @@ export const useSystem = () => {
     },
     [setBackups],
   )
-
   const fetchSchedulerHealth = useCallback(async () => {
     try {
       const data = await systemRepository.getSchedulerHealth()
@@ -125,7 +113,6 @@ export const useSystem = () => {
       console.error('Failed to fetch scheduler health', err)
     }
   }, [])
-
   const fetchAll = useCallback(() => {
     fetchWebhooks()
     fetchS3Configs()
@@ -145,14 +132,12 @@ export const useSystem = () => {
     fetchBackups,
     fetchSchedulerHealth,
   ])
-
   useEffect(() => {
     const init = async () => {
       await fetchAll()
     }
     init()
   }, [fetchAll])
-
   const fetchS3Backups = useCallback(async (id: number) => {
     setLoading(`s3-list-${id}`)
     try {
@@ -162,7 +147,6 @@ export const useSystem = () => {
       setLoading(null)
     }
   }, [])
-
   const triggerBackup = useCallback(async () => {
     try {
       await systemRepository.triggerBackup()
@@ -172,7 +156,6 @@ export const useSystem = () => {
       toast.error('Failed to trigger backup')
     }
   }, [fetchBackups])
-
   const updateBackupCron = useCallback(async (cron: string) => {
     try {
       await systemRepository.updateBackupCron(cron)
@@ -182,7 +165,6 @@ export const useSystem = () => {
       toast.error('Failed to update schedule')
     }
   }, [])
-
   const updateDefaultBackupTarget = useCallback(async (target: string) => {
     try {
       await systemRepository.updateDefaultBackupTarget(target)
@@ -192,7 +174,6 @@ export const useSystem = () => {
       toast.error('Failed to update target')
     }
   }, [])
-
   const addWebhook = useCallback(async (webhook: Partial<Webhook>) => {
     try {
       const newWebhook = await systemRepository.addWebhook(webhook)
@@ -202,7 +183,6 @@ export const useSystem = () => {
       toast.error('Failed to add webhook')
     }
   }, [])
-
   const deleteWebhook = useCallback(async (id: number) => {
     if (!confirm('Delete this webhook?')) return
     try {
@@ -213,7 +193,6 @@ export const useSystem = () => {
       toast.error('Failed to delete webhook')
     }
   }, [])
-
   const testWebhook = useCallback(async (id: number) => {
     try {
       const res = await systemRepository.testWebhook(id)
@@ -226,7 +205,6 @@ export const useSystem = () => {
       toast.error('Failed to send test notification')
     }
   }, [])
-
   const addS3Config = useCallback(async (config: Partial<S3Config>) => {
     try {
       const newConfig = await systemRepository.addS3Config(config)
@@ -236,7 +214,6 @@ export const useSystem = () => {
       toast.error('Failed to add S3 configuration')
     }
   }, [])
-
   return {
     webhooks,
     s3Configs,

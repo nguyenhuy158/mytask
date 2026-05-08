@@ -1,5 +1,4 @@
 import type { Task } from '../models/Task'
-
 export const filterTasks = (tasks: Task[], searchTerm: string): Task[] => {
   const term = searchTerm.toLowerCase()
   return tasks.filter(

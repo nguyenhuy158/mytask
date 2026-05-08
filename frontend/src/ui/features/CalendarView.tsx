@@ -2,38 +2,28 @@ import React, { useState } from 'react'
 import type { Task } from '../../domain/models/Task'
 import { Typography } from '../components/Typography'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
 interface CalendarViewProps {
   tasks: Task[]
 }
-
 export const CalendarView: React.FC<CalendarViewProps> = ({ tasks }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
-
   const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
   const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
-
   const startDay = startOfMonth.getDay()
   const totalDays = endOfMonth.getDate()
-
   const prevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
   }
-
   const nextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   }
-
   const days = []
-  // Previous month padding
   for (let i = 0; i < startDay; i++) {
     days.push(null)
   }
-  // Current month days
   for (let i = 1; i <= totalDays; i++) {
     days.push(i)
   }
-
   const getTasksForDay = (day: number) => {
     return tasks.filter((task) => {
       if (!task.deadline) return false
@@ -45,9 +35,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks }) => {
       )
     })
   }
-
   const monthName = currentDate.toLocaleString('default', { month: 'long' })
-
   return (
     <div className="bg-canvas border border-ink p-8">
       <div className="flex items-center justify-between mb-8">
@@ -69,7 +57,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks }) => {
           </button>
         </div>
       </div>
-
       <div className="grid grid-cols-7 gap-px bg-hairline border border-hairline">
         {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
           <div key={day} className="bg-surface-soft p-4 text-center">

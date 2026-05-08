@@ -1,12 +1,10 @@
 import React, { useState } from 'react'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Button } from '../components/Button'
-
 interface AddEnvModalProps {
   onClose: () => void
   onAdd: (env: Partial<OdooEnv>) => void
 }
-
 export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
   const [formData, setFormData] = useState<Partial<OdooEnv>>({
     name: '',
@@ -16,13 +14,11 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
     password: '',
     color: '#000000',
   })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onAdd(formData)
     onClose()
   }
-
   return (
     <div className="fixed inset-0 z-[400] bg-canvas/90 backdrop-blur-md flex items-center justify-center p-8">
       <div className="w-full max-w-lg bg-canvas border border-ink p-12 space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
@@ -32,7 +28,6 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
           </h2>
           <p className="text-xs italic text-mute">Define Odoo XML-RPC connection parameters.</p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -47,7 +42,6 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               URL
@@ -60,7 +54,6 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
             />
           </div>
-
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -87,7 +80,6 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
               />
             </div>
           </div>
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Password / API_Key
@@ -101,7 +93,6 @@ export const AddEnvModal: React.FC<AddEnvModalProps> = ({ onClose, onAdd }) => {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </div>
-
           <div className="flex gap-4 pt-4">
             <Button type="submit" fullWidth>
               [CREATE_ENVIRONMENT]

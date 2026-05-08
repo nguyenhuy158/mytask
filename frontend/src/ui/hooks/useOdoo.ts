@@ -4,7 +4,6 @@ import type { OdooEnv, DisbursementReport } from '../../domain/models/OdooEnv'
 import { odooRepository } from '../../adapters/api/AxiosOdooRepository'
 import { sortCrons, filterCrons } from '../../domain/services/CronService'
 import toast from 'react-hot-toast'
-
 export const useOdoo = (searchTerm: string) => {
   const [envs, setEnvs] = useState<OdooEnv[]>([])
   const [crons, setCrons] = useState<Cron[]>([])
@@ -18,7 +17,6 @@ export const useOdoo = (searchTerm: string) => {
     key: null,
     direction: 'asc',
   })
-
   const fetchEnvs = useCallback(async () => {
     try {
       const data = await odooRepository.getEnvs()
@@ -33,7 +31,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to fetch environments')
     }
   }, [selectedEnvId])
-
   const fetchCrons = useCallback(async (envId: number, silent = false) => {
     if (!silent) setLoading('crons')
     try {
@@ -47,7 +44,6 @@ export const useOdoo = (searchTerm: string) => {
       if (!silent) setLoading(null)
     }
   }, [])
-
   const fetchReport = useCallback(async (envId: number, silent = false) => {
     if (!silent) setLoading('report')
     try {
@@ -56,21 +52,18 @@ export const useOdoo = (searchTerm: string) => {
     } catch (err: unknown) {
       console.error(`Failed to fetch report for env ${envId}:`, err)
       let message = 'Failed to fetch report'
-
       const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string }
       if (axiosErr.response?.data?.detail) {
         message = axiosErr.response.data.detail
       } else if (axiosErr.message) {
         message = axiosErr.message
       }
-
       toast.error(message)
       throw err
     } finally {
       if (!silent) setLoading(null)
     }
   }, [])
-
   const toggleCron = useCallback(
     async (cronId: number, active: boolean) => {
       if (!selectedEnvId) return
@@ -84,7 +77,6 @@ export const useOdoo = (searchTerm: string) => {
     },
     [selectedEnvId],
   )
-
   const runCron = useCallback(
     async (cronId: number) => {
       if (!selectedEnvId) return
@@ -97,14 +89,12 @@ export const useOdoo = (searchTerm: string) => {
     },
     [selectedEnvId],
   )
-
   useEffect(() => {
     const init = async () => {
       await fetchEnvs()
     }
     init()
   }, [fetchEnvs])
-
   useEffect(() => {
     let isMounted = true
     const init = async () => {
@@ -128,16 +118,13 @@ export const useOdoo = (searchTerm: string) => {
       isMounted = false
     }
   }, [selectedEnvId, fetchCrons, fetchReport])
-
   const sortedCrons = useMemo(() => {
     if (!sortConfig.key) return crons
     return sortCrons(crons, sortConfig.key, sortConfig.direction)
   }, [crons, sortConfig])
-
   const filteredCrons = useMemo(() => {
     return filterCrons(sortedCrons, searchTerm)
   }, [sortedCrons, searchTerm])
-
   const requestSort = (key: keyof Cron | 'interval') => {
     let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -145,7 +132,6 @@ export const useOdoo = (searchTerm: string) => {
     }
     setSortConfig({ key, direction })
   }
-
   const addEnv = useCallback(async (env: Partial<OdooEnv>) => {
     try {
       const newEnv = await odooRepository.addEnv(env)
@@ -155,7 +141,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to add environment')
     }
   }, [])
-
   const updateEnv = useCallback(async (id: number, data: Partial<OdooEnv>) => {
     try {
       const updated = await odooRepository.updateEnv(id, data)
@@ -165,7 +150,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to update environment')
     }
   }, [])
-
   const deleteEnv = useCallback(async (id: number) => {
     if (!confirm('Delete this environment?')) return
     try {
@@ -176,7 +160,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to delete environment')
     }
   }, [])
-
   const duplicateEnv = useCallback(async (id: number) => {
     try {
       const newEnv = await odooRepository.duplicateEnv(id)
@@ -186,7 +169,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to duplicate environment')
     }
   }, [])
-
   const setDefaultEnv = useCallback(async (id: number) => {
     try {
       await odooRepository.setDefaultEnv(id)
@@ -201,7 +183,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to set default environment')
     }
   }, [])
-
   const testEnv = useCallback(async (id: number) => {
     try {
       const res = await odooRepository.testEnv(id)
@@ -217,7 +198,6 @@ export const useOdoo = (searchTerm: string) => {
       return false
     }
   }, [])
-
   const exportEnvs = useCallback(async () => {
     try {
       const data = await odooRepository.exportEnvs()
@@ -233,7 +213,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to export environments')
     }
   }, [])
-
   const importEnvs = useCallback(async (envsData: Partial<OdooEnv>[]) => {
     try {
       const imported = await odooRepository.importEnvs(envsData)
@@ -243,7 +222,6 @@ export const useOdoo = (searchTerm: string) => {
       toast.error('Failed to import environments')
     }
   }, [])
-
   return {
     envs,
     setEnvs,

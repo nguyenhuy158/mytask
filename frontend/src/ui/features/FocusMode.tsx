@@ -1,12 +1,9 @@
 import React, { useState } from 'react'
-
 interface FocusModeProps {
   onClose: () => void
 }
-
 export const FocusMode: React.FC<FocusModeProps> = ({ onClose }) => {
   const [input, setInput] = useState('')
-
   return (
     <div className="fixed inset-0 z-[200] bg-canvas flex flex-col items-center justify-center p-20 animate-in fade-in duration-500">
       <button
@@ -15,7 +12,6 @@ export const FocusMode: React.FC<FocusModeProps> = ({ onClose }) => {
       >
         [EXIT_ZEN_MODE]
       </button>
-
       <div className="w-full max-w-2xl space-y-8 text-center">
         <div className="text-[10px] uppercase font-bold tracking-[0.5em] opacity-30">
           Focus_Session_Active
@@ -29,7 +25,6 @@ export const FocusMode: React.FC<FocusModeProps> = ({ onClose }) => {
         />
         <div className="text-xs italic text-mute">Press ESC to exit or type your goal above</div>
       </div>
-
       <div className="mt-20 opacity-5">
         <pre className="text-[10px] leading-none">
           {`

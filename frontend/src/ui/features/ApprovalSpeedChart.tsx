@@ -1,13 +1,11 @@
 import React, { useMemo } from 'react'
 import type { DisbursementReport as IDisbursementReport } from '../../domain/models/OdooEnv'
 import { Typography } from '../components/Typography'
-
 interface ApprovalSpeedChartProps {
   report: IDisbursementReport[]
   minDate?: number
   maxDate?: number
 }
-
 export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
   report,
   minDate: propMinDate,
@@ -24,14 +22,9 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
       }))
       .sort((a, b) => a.date - b.date)
   }, [report])
-
-  // Generate X-axis ticks (unique dates)
   const xTicks = useMemo(() => {
     if (chartData.length === 0) return []
-
     const uniqueDates = Array.from(new Set(chartData.map((d) => d.dateStr)))
-
-    // If we have a lot of unique dates, sample them
     if (uniqueDates.length > 10) {
       const sampled = []
       const step = (uniqueDates.length - 1) / 7
@@ -40,26 +33,19 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
       }
       return sampled.map((ds) => chartData.find((d) => d.dateStr === ds)!)
     }
-
-    // Otherwise show all unique dates
     return uniqueDates.map((ds) => chartData.find((d) => d.dateStr === ds)!)
   }, [chartData])
-
   if (chartData.length < 1) return null
-
   const margin = { top: 20, right: 20, bottom: 60, left: 60 }
   const width = 1000
   const height = 400
   const innerWidth = width - margin.left - margin.right
   const innerHeight = height - margin.top - margin.bottom
-
   const dataMinDate = chartData[0].date
   const dataMaxDate = chartData[chartData.length - 1].date
-
   const minDate = propMinDate ?? dataMinDate
   const maxDate = propMaxDate ?? dataMaxDate
   const maxDuration = Math.max(...chartData.map((d) => d.duration)) * 1.1 || 1
-
   const getX = (date: number) => {
     if (maxDate === minDate) return innerWidth / 2 + margin.left
     const pos = ((date - minDate) / (maxDate - minDate)) * innerWidth + margin.left
@@ -67,25 +53,19 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
   }
   const getY = (duration: number) =>
     innerHeight - (duration / maxDuration) * innerHeight + margin.top
-
   const points = chartData.map((d) => ({
     x: getX(d.date),
     y: getY(d.duration),
     ...d,
   }))
-
   const linePath = points.reduce(
     (path, p, i) => path + (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`),
     '',
   )
-
   const areaPath =
     linePath +
     ` L ${points[points.length - 1].x} ${innerHeight + margin.top} L ${points[0].x} ${innerHeight + margin.top} Z`
-
-  // Generate Y-axis ticks
   const yTicks = [0, maxDuration / 4, maxDuration / 2, (maxDuration * 3) / 4, maxDuration]
-
   return (
     <div className="border border-ink bg-canvas p-6 space-y-4">
       <div className="flex items-center justify-between px-2">
@@ -101,7 +81,6 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
           </div>
         </div>
       </div>
-
       <div className="relative w-full overflow-x-auto">
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -130,7 +109,6 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
               </text>
             </React.Fragment>
           ))}
-
           {/* X-axis ticks */}
           {xTicks.map((tick, i) => (
             <React.Fragment key={i}>
@@ -153,13 +131,10 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
               </text>
             </React.Fragment>
           ))}
-
           {/* Area */}
           <path d={areaPath} fill="var(--color-accent, #007aff)" fillOpacity="0.1" />
-
           {/* Line */}
           <path d={linePath} fill="none" stroke="var(--color-accent, #007aff)" strokeWidth="2" />
-
           {/* Points */}
           {points.length < 100 &&
             points.map((p, i) => (
@@ -173,7 +148,6 @@ export const ApprovalSpeedChart: React.FC<ApprovalSpeedChartProps> = ({
                 strokeWidth="1.5"
               />
             ))}
-
           {/* Axes */}
           <line
             x1={margin.left}

@@ -7,5 +7,4 @@ export interface Cron {
   interval_type: string
   model: string
 }
-
 export type IntervalType = 'minutes' | 'hours' | 'days' | 'weeks' | 'months'

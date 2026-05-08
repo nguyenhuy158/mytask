@@ -13,7 +13,6 @@ async def disconnect_db():
         await db.disconnect()
 
 
-# Dependency cho FastAPI
 async def get_db():
     await connect_db()
     return db

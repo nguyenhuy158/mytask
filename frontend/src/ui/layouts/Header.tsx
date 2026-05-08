@@ -1,7 +1,6 @@
 import React from 'react'
 import { Plus, RefreshCcw } from 'lucide-react'
 import { Button } from '../components/Button'
-
 interface HeaderProps {
   activeTab: string
   searchTerm: string
@@ -9,7 +8,6 @@ interface HeaderProps {
   onRefresh: () => void
   onNew: () => void
 }
-
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   searchTerm,
@@ -30,7 +28,6 @@ export const Header: React.FC<HeaderProps> = ({
           />
         </div>
       </div>
-
       <div className="flex items-center gap-2 md:gap-6">
         <Button
           variant="link"

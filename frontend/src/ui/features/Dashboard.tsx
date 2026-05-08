@@ -5,7 +5,6 @@ import { TaskCard } from './TaskCard'
 import { CalendarView } from './CalendarView'
 import { Typography } from '../components/Typography'
 import { Button } from '../components/Button'
-
 interface DashboardProps {
   tasks: Task[]
   viewMode: 'list' | 'board' | 'calendar'
@@ -15,7 +14,6 @@ interface DashboardProps {
   onUpdateStatus: (id: number, status: string) => void
   selectedIndex?: number
 }
-
 export const Dashboard: React.FC<DashboardProps> = ({
   tasks,
   viewMode,
@@ -28,7 +26,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   if (viewMode === 'calendar') {
     return <CalendarView tasks={tasks} />
   }
-
   if (viewMode === 'list') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -45,7 +42,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
     )
   }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-[600px]">
       {['todo', 'doing', 'done'].map((status) => (

@@ -10,12 +10,10 @@ from ..driven.prisma_adapter import PrismaAdapter
 from .websocket_adapter import WebSocketAdapter
 
 logger = logging.getLogger(__name__)
-
 prisma_adapter = PrismaAdapter()
 http_adapter = HttpAdapter()
 odoo_adapter = OdooAdapter()
 ws_adapter = WebSocketAdapter()
-
 task_service = TaskService(
     repository=prisma_adapter,
     external_api=http_adapter,
@@ -23,7 +21,6 @@ task_service = TaskService(
     broadcast=ws_adapter,
     odoo_port=odoo_adapter,
 )
-
 dispatcher = SimpleXMLRPCDispatcher(allow_none=True, encoding=None)
 
 

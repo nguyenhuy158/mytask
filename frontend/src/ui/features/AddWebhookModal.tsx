@@ -2,12 +2,10 @@ import React, { useState } from 'react'
 import type { Webhook } from '../../domain/models/Webhook'
 import { Button } from '../components/Button'
 import { Select } from '../components/Select'
-
 interface AddWebhookModalProps {
   onClose: () => void
   onAdd: (webhook: Partial<Webhook>) => void
 }
-
 export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd }) => {
   const [formData, setFormData] = useState<Partial<Webhook>>({
     name: '',
@@ -17,13 +15,11 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
     target: '',
     active: 1,
   })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onAdd(formData)
     onClose()
   }
-
   return (
     <div className="fixed inset-0 z-[400] bg-canvas/90 backdrop-blur-md flex items-center justify-center p-8">
       <div className="w-full max-w-lg bg-canvas border border-ink p-12 space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
@@ -33,7 +29,6 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
             Configure a new outgoing notification endpoint.
           </p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -48,7 +43,6 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Type
@@ -70,7 +64,6 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               }
             />
           </div>
-
           {formData.type === 'telegram' ? (
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -98,7 +91,6 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               />
             </div>
           )}
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Secret / API_Key
@@ -111,7 +103,6 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               onChange={(e) => setFormData({ ...formData, secret: e.target.value })}
             />
           </div>
-
           <div className="flex gap-4 pt-4">
             <Button type="submit" fullWidth>
               [CREATE_WEBHOOK]

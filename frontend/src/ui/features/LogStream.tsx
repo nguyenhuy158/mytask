@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { wsAdapter } from '../../adapters/websocket/NativeWsAdapter'
-
 export const LogStream = () => {
   const [logs, setLogs] = useState<string[]>([])
   const [isCollapsed, setIsCollapsed] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     const handler = (data: { type: string; message: string }) => {
       if (data.type === 'LOG_STREAM') {
@@ -15,16 +13,13 @@ export const LogStream = () => {
       }
     }
     wsAdapter.connect(handler, () => {})
-
     return () => {}
   }, [])
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [logs])
-
   return (
     <div
       className={`bg-ink text-on-primary font-mono transition-all duration-300 border border-ink flex flex-col relative z-[100] ${isCollapsed ? 'h-8 w-48 md:w-64' : 'h-64 w-[calc(100vw-2rem)] md:w-64'}`}
@@ -41,7 +36,6 @@ export const LogStream = () => {
           {isCollapsed ? '[+]' : '[—]'}
         </button>
       </div>
-
       {!isCollapsed && (
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-1 text-[10px]">
           {logs.length === 0 && <div className="text-mute italic">Waiting for logs...</div>}

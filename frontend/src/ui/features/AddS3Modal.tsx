@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
-
 export interface S3Config {
   id?: number
   name: string
@@ -10,12 +9,10 @@ export interface S3Config {
   access_key: string
   secret_key: string
 }
-
 interface AddS3ModalProps {
   onClose: () => void
   onAdd: (config: S3Config) => Promise<void>
 }
-
 export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<S3Config>({
@@ -26,7 +23,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
     access_key: '',
     secret_key: '',
   })
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -40,7 +36,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
       setLoading(false)
     }
   }
-
   const testConnection = async () => {
     setLoading(true)
     try {
@@ -64,7 +59,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
       setLoading(false)
     }
   }
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4">
       <div className="w-full max-w-md border border-ink bg-canvas p-8 font-mono shadow-2xl">
@@ -77,7 +71,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
             [ESC]
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
@@ -93,7 +86,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
                 placeholder="AWS Production / Cloudflare R2"
               />
             </div>
-
             <div>
               <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Endpoint URL
@@ -106,7 +98,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
                 placeholder="https://s3.amazonaws.com"
               />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
@@ -131,7 +122,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Access Key
@@ -144,7 +134,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
                 onChange={(e) => setFormData({ ...formData, access_key: e.target.value })}
               />
             </div>
-
             <div>
               <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Secret Key
@@ -158,7 +147,6 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
               />
             </div>
           </div>
-
           <div className="pt-4 flex gap-3">
             <button
               type="button"

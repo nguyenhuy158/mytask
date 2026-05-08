@@ -29,7 +29,6 @@ class OdooService:
         env = await self.repository.get_odoo_env_by_id(env_id)
         if not env:
             raise Exception("Environment not found")
-
         new_env = OdooEnvSchema(
             name=f"{env.name} (Copy)",
             url=env.url,
@@ -51,7 +50,6 @@ class OdooService:
             env = await self.repository.get_odoo_env_by_id(env_id)
         else:
             env = await self.repository.get_default_odoo_env()
-
         if not env:
             raise Exception("Environment not found or no default set")
         return env
@@ -77,8 +75,6 @@ class OdooService:
         for cron in crons:
             if not isinstance(cron.get("interval_type"), str):
                 cron["interval_type"] = str(cron.get("interval_type") or "")
-
-            # Handle model_id (many2one returns [id, name])
             model_id = cron.get("model_id")
             if isinstance(model_id, (list, tuple)) and len(model_id) > 1:
                 cron["model"] = model_id[1]

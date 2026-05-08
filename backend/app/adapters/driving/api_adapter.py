@@ -33,7 +33,6 @@ router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
 
-# Injected via main.py or dependencies
 def get_task_service():
     from ...main import task_service
 
@@ -510,7 +509,6 @@ async def test_webhook(
     webhook = await repo.get_webhook_by_id(id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
-
     await http_adapter.send_notification(
         [webhook], "TEST_NOTIFICATION", "This is a test notification from mytask."
     )

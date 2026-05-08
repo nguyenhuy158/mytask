@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-
 export const Wiki = () => {
   const [notes, setNotes] = useState<{ id: number; title: string; timestamp: string }[]>([])
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
-
   const fetchNotes = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notes`)
@@ -16,14 +14,12 @@ export const Wiki = () => {
       console.error(err)
     }
   }
-
   useEffect(() => {
     const init = async () => {
       await fetchNotes()
     }
     init()
   }, [])
-
   const saveNote = async () => {
     if (!title || !content) return
     setLoading(true)
@@ -43,7 +39,6 @@ export const Wiki = () => {
       setLoading(false)
     }
   }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[700px]">
       <div className="lg:col-span-1 border border-ink bg-canvas flex flex-col">
@@ -64,7 +59,6 @@ export const Wiki = () => {
           ))}
         </div>
       </div>
-
       <div className="lg:col-span-2 border border-ink bg-canvas flex flex-col">
         <div className="bg-ink text-on-primary px-4 py-2 text-[10px] font-bold uppercase flex justify-between">
           <span>Editor</span>

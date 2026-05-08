@@ -43,7 +43,6 @@ class TaskService:
     async def update_task_status(self, task_id: int, status: str) -> Any:
         logger.debug(f"Updating task {task_id} status to: {status}")
         db_task = await self.repository.update_task_status(task_id, status)
-
         if status == "done" and db_task.odoo_env_id and db_task.odoo_project_id:
             try:
                 env = await self.repository.get_odoo_env_by_id(db_task.odoo_env_id)
@@ -68,7 +67,6 @@ class TaskService:
                 await self.repository.add_audit_log(
                     "ODOO_SYNC_ERROR", f"Failed to sync '{db_task.name}': {str(e)}"
                 )
-
         await self.repository.add_audit_log(
             "TASK_STATUS_UPDATED", f"Task '{db_task.name}' to {status}"
         )
@@ -91,8 +89,6 @@ class TaskService:
         if not db_task:
             logger.warning(f"Task not found for execution: {task_id}")
             return None
-
-        # Dependency Check
         if db_task.dependencies:
             logger.debug(
                 f"Checking dependencies for task {task_id}: {db_task.dependencies}"
@@ -113,7 +109,6 @@ class TaskService:
                         "status": "error",
                         "message": f"Dependency {dep_id} not done",
                     }
-
         result = (
             self.external_api.get_weather()
             if db_task.task_type == "weather"
@@ -121,11 +116,9 @@ class TaskService:
             if db_task.task_type == "ip"
             else "Unsupported"
         )
-
         history = await self.repository.create_task_history(
             db_task.id, db_task.name, str(result)
         )
-
         await self.broadcast.broadcast(
             {
                 "type": "TASK_COMPLETED",
@@ -140,7 +133,6 @@ class TaskService:
                 },
             }
         )
-
         webhooks = await self.repository.get_webhooks(active_only=True)
         await self.notification.send_notification(webhooks, db_task.name, result)
         return result
@@ -171,10 +163,8 @@ class TaskService:
         task = await self.repository.get_task_by_id(task_id)
         if not task:
             return []
-
         desc = task.description.lower()
         subtasks_data = []
-
         if "refactor" in desc or "implement" in desc:
             subtasks_data = [
                 {
@@ -217,7 +207,6 @@ class TaskService:
             steps = [s.strip() for s in task.description.split(".") if s.strip()]
             for i, step in enumerate(steps):
                 subtasks_data.append({"name": f"Step {i + 1}", "desc": step})
-
         subtasks = []
         for data in subtasks_data:
             new_task = TaskSchema(
@@ -231,7 +220,6 @@ class TaskService:
             )
             sub = await self.repository.create_task(new_task)
             subtasks.append(sub)
-
         await self.repository.add_audit_log(
             "TASK_DECOMPOSED",
             f"Task {task_id} decomposed into {len(subtasks)} subtasks via AI",
@@ -265,7 +253,6 @@ class TaskService:
         tasks = await self.repository.get_tasks()
         graph = "TASK DEPENDENCY GRAPH\n"
         graph += "=" * 20 + "\n"
-
         for task in tasks:
             graph += f"[{task.id}] {task.name}\n"
             if task.dependencies:

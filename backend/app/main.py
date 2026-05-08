@@ -7,8 +7,6 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from .adapters.driven.database import connect_db, disconnect_db
-
-# Adapters
 from .adapters.driven.http_adapter import HttpAdapter
 from .adapters.driven.odoo_adapter import OdooAdapter
 from .adapters.driven.prisma_adapter import PrismaAdapter
@@ -16,8 +14,6 @@ from .adapters.driven.s3_adapter import S3Adapter
 from .adapters.driving.api_adapter import router as api_router
 from .adapters.driving.scheduler_adapter import SchedulerAdapter
 from .adapters.driving.websocket_adapter import WebSocketAdapter
-
-# Core
 from .core.constants import ResponseMessage
 from .core.i18n import translator
 from .core.services.backup_service import BackupService
@@ -29,15 +25,11 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# Initialize Adapters
 prisma_adapter = PrismaAdapter()
 http_adapter = HttpAdapter()
 odoo_adapter = OdooAdapter()
 s3_adapter = S3Adapter()
 ws_adapter = WebSocketAdapter()
-
-# Initialize Services
 task_service = TaskService(
     repository=prisma_adapter,
     external_api=http_adapter,
@@ -47,40 +39,29 @@ task_service = TaskService(
 )
 backup_service = BackupService(repository=prisma_adapter, storage=s3_adapter)
 odoo_service = OdooService(repository=prisma_adapter, odoo_port=odoo_adapter)
-
-# Scheduler
 scheduler = SchedulerAdapter(task_service=task_service, backup_service=backup_service)
-
-# FastAPI Setup
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Include Router
 app.include_router(api_router)
 
 
-# Lifespan / Events
 @app.on_event("startup")
 async def startup_event():
     await connect_db()
     scheduler.start()
-
     cron_expr = await backup_service.get_backup_cron()
     scheduler.schedule_backup(cron_expr)
-
     tasks = await prisma_adapter.get_tasks_with_cron()
     for t in tasks:
         scheduler.schedule_task(t.id, t.cron_expression, t.name)
-
     await prisma_adapter.add_audit_log(
         ResponseMessage.SYSTEM_STARTUP_MSG,
         translator.translate(ResponseMessage.SYSTEM_STARTUP_MSG, lang="en"),

@@ -1,15 +1,11 @@
 import type { Webhook } from '../domain/models/Webhook'
 import type { S3Config, S3Backup } from '../domain/models/S3'
 import type { AuditLog, SystemConfig, SchedulerHealth, LocalBackup } from '../domain/models/System'
-
 export interface ISystemRepository {
-  // Webhooks
   getWebhooks(): Promise<Webhook[]>
   addWebhook(webhook: Partial<Webhook>): Promise<Webhook>
   deleteWebhook(id: number): Promise<void>
   testWebhook(id: number): Promise<{ status: string; message?: string }>
-
-  // S3
   getS3Configs(): Promise<S3Config[]>
   addS3Config(config: Partial<S3Config>): Promise<S3Config>
   deleteS3Config(id: number): Promise<void>
@@ -21,8 +17,6 @@ export interface ISystemRepository {
     key: string,
   ): Promise<{ status: string; result: string; message?: string }>
   deleteS3Backup(configId: number, key: string): Promise<void>
-
-  // Config & Backups
   getConfig(): Promise<SystemConfig>
   getBackups(): Promise<LocalBackup[]>
   downloadBackup(filename: string): Promise<void>

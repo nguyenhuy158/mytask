@@ -18,13 +18,9 @@ class BackupService:
     async def run_backup_job(self) -> str:
         local_result = self.storage.backup_sqlite_db()
         logger.info(f"Local backup: {local_result}")
-
         if "Backup created:" not in local_result:
             return local_result
-
         local_path = local_result.split(": ")[1]
-
-        # Check for default S3 target
         config = await self.repository.get_system_config("default_backup_target")
         if config and config.value.startswith("s3:"):
             try:
@@ -32,12 +28,10 @@ class BackupService:
                 if len(target_parts) < 2:
                     logger.warning(f"Invalid S3 backup target format: {config.value}")
                     return local_result
-
                 s3_id_str = target_parts[1]
                 if not s3_id_str.isdigit():
                     logger.warning(f"S3 backup target ID is not a digit: {s3_id_str}")
                     return local_result
-
                 s3_id = int(s3_id_str)
                 s3_config = await self.repository.get_s3_config_by_id(s3_id)
                 if s3_config:
@@ -47,13 +41,11 @@ class BackupService:
                     logger.error(f"S3 configuration with ID {s3_id} not found")
             except Exception as e:
                 logger.error(f"Failed to upload scheduled backup to S3: {e}")
-
         return local_result
 
     async def list_local_backups(self) -> list[dict[str, Any]]:
         if not os.path.exists("backups"):
             return []
-
         backups = []
         for f in os.listdir("backups"):
             if f.startswith("tasks_"):
@@ -68,7 +60,6 @@ class BackupService:
                         ),
                     }
                 )
-
         return sorted(backups, key=lambda x: x["filename"], reverse=True)
 
     async def get_backup_cron(self) -> str:
@@ -95,11 +86,9 @@ class BackupService:
         config = await self.repository.get_s3_config_by_id(config_id)
         if not config:
             raise Exception("S3 configuration not found")
-
         local_result = self.storage.backup_sqlite_db()
         if "Backup created:" not in local_result:
             raise Exception(local_result)
-
         local_path = local_result.split(": ")[1]
         return self.storage.upload_backup(config, local_path)
 
@@ -109,14 +98,11 @@ class BackupService:
         config = await self.repository.get_s3_config_by_id(config_id)
         if not config:
             raise Exception("S3 configuration not found")
-
         local_path = f"backups/restore_{key}"
         self.storage.download_backup(config, key, local_path)
-
         await disconnect_db_func()
         shutil.copy2(local_path, "tasks.db")
         await connect_db_func()
-
         return f"Restored from {key}"
 
     async def restore_local_backup(
@@ -125,11 +111,9 @@ class BackupService:
         local_path = os.path.join("backups", filename)
         if not os.path.exists(local_path):
             raise Exception("Backup file not found")
-
         await disconnect_db_func()
         shutil.copy2(local_path, "tasks.db")
         await connect_db_func()
-
         return f"Restored from {filename}"
 
     async def delete_local_backup(self, filename: str) -> None:

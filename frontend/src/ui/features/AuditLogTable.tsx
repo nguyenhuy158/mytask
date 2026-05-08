@@ -3,23 +3,18 @@ import type { AuditLog } from '../../domain/models/System'
 import { Table, TableBody, TableRow, TableCell, Pagination } from '../components/Table'
 import { Button } from '../components/Button'
 import { Typography } from '../components/Typography'
-
 interface AuditLogTableProps {
   logs: AuditLog[]
   onRefresh: () => void
 }
-
 export const AuditLogTable: React.FC<AuditLogTableProps> = ({ logs, onRefresh }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
-
   const paginatedLogs = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize
     return logs.slice(startIndex, startIndex + pageSize)
   }, [logs, currentPage])
-
   const totalPages = Math.ceil(logs.length / pageSize)
-
   return (
     <div className="mt-16">
       <div className="flex items-center justify-between mb-6 border-b border-hairline pb-2">

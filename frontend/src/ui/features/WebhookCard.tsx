@@ -4,14 +4,12 @@ import { Card, CardHeader } from '../components/Card'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { Typography } from '../components/Typography'
-
 interface WebhookCardProps {
   webhook: Webhook
   testingWebhookId: number | null
   onTest: (id: number) => void
   onDelete: (id: number) => void
 }
-
 export const WebhookCard: React.FC<WebhookCardProps> = ({
   webhook,
   testingWebhookId,

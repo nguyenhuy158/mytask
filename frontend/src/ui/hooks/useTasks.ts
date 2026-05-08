@@ -3,11 +3,9 @@ import type { Task } from '../../domain/models/Task'
 import { taskRepository } from '../../adapters/api/AxiosTaskRepository'
 import { filterTasks } from '../../domain/services/TaskService'
 import toast from 'react-hot-toast'
-
 export const useTasks = (searchTerm: string) => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
-
   const fetchTasks = useCallback(async () => {
     try {
       const data = await taskRepository.getTasks()
@@ -16,7 +14,6 @@ export const useTasks = (searchTerm: string) => {
       toast.error('Failed to fetch tasks')
     }
   }, [])
-
   const fetchRankedTasks = useCallback(async () => {
     try {
       const res = await fetch(
@@ -29,7 +26,6 @@ export const useTasks = (searchTerm: string) => {
       toast.error('Failed to rank tasks')
     }
   }, [])
-
   const addTask = useCallback(async (newTask: Partial<Task>) => {
     try {
       const task = await taskRepository.addTask(newTask)
@@ -41,13 +37,11 @@ export const useTasks = (searchTerm: string) => {
       throw err
     }
   }, [])
-
   const axiosDeleteTask = useCallback(async (id: number) => {
     await taskRepository.deleteTask(id)
     setTasks((prev) => prev.filter((t) => t.id !== id))
     toast.success('Task deleted')
   }, [])
-
   const deleteTask = useCallback(
     async (id: number) => {
       if (!confirm('Delete this task?')) return
@@ -59,7 +53,6 @@ export const useTasks = (searchTerm: string) => {
     },
     [axiosDeleteTask],
   )
-
   const updateTaskStatus = useCallback(async (id: number, status: string) => {
     try {
       await taskRepository.updateStatus(id, status)
@@ -69,7 +62,6 @@ export const useTasks = (searchTerm: string) => {
       toast.error('Failed to update status')
     }
   }, [])
-
   const runTask = useCallback(async (id: number) => {
     setLoading(true)
     try {
@@ -83,16 +75,13 @@ export const useTasks = (searchTerm: string) => {
       setLoading(false)
     }
   }, [])
-
   useEffect(() => {
     const init = async () => {
       await fetchTasks()
     }
     init()
   }, [fetchTasks])
-
   const filteredTasks = filterTasks(tasks, searchTerm)
-
   return {
     tasks,
     setTasks,

@@ -17,7 +17,5 @@ export interface Task {
   odoo_project_id?: number | null
   odoo_task_id?: number | null
 }
-
 export type TaskStatus = 'todo' | 'doing' | 'done'
-
 export const TASK_TYPES = ['generic', 'weather', 'ip', 'code_todo']

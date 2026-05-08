@@ -4,7 +4,6 @@ import { Card, CardHeader, CardBody, CardFooter } from '../components/Card'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { Typography } from '../components/Typography'
-
 interface TaskCardProps {
   task: Task
   result?: { text: string; time: string }
@@ -12,7 +11,6 @@ interface TaskCardProps {
   onRun: (id: number) => void
   selected?: boolean
 }
-
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   result,
@@ -53,7 +51,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </Button>
         </div>
       </CardHeader>
-
       <CardBody>
         <Typography variant="h1" className="mb-2 group-hover:text-primary transition-colors">
           {task.name}
@@ -61,7 +58,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Typography variant="caption" className="mb-8 block line-clamp-2">
           {task.description}
         </Typography>
-
         {task.deadline && (
           <div className="mb-4 flex items-center justify-between border-t border-hairline pt-4">
             <Typography variant="label">Deadline</Typography>
@@ -70,7 +66,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </Typography>
           </div>
         )}
-
         {task.dependencies && (
           <div className="mb-4 flex items-center justify-between border-t border-hairline pt-4">
             <Typography variant="label">Depends On</Typography>
@@ -80,7 +75,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         )}
       </CardBody>
-
       <CardFooter>
         <div className="flex items-center justify-between">
           <Typography variant="label">Last Execution</Typography>
@@ -88,7 +82,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             {result ? result.time : 'NEVER'}
           </Typography>
         </div>
-
         {result && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
@@ -102,7 +95,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
         )}
-
         <div className="grid grid-cols-2 gap-2 mt-4">
           <Button
             variant="outline"

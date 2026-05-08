@@ -1,6 +1,5 @@
 import type { Task } from '../domain/models/Task'
 import type { HistoryItem } from '../domain/models/System'
-
 export interface ITaskRepository {
   getTasks(): Promise<Task[]>
   addTask(task: Partial<Task>): Promise<Task>

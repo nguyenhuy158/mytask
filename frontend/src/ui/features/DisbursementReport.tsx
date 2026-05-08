@@ -15,15 +15,12 @@ import { Skeleton } from '../components/Skeleton'
 import { Select } from '../components/Select'
 import { ApprovalSpeedChart } from './ApprovalSpeedChart'
 import { LargeTrendChart } from './TrendCharts'
-
 interface DisbursementReportProps {
   report: IDisbursementReport[]
   loading: boolean
   envUrl?: string
 }
-
 type FilterRange = '3d' | '7d' | '30d' | '3m' | 'this_month' | 'last_month' | 'all' | 'custom'
-
 const Sparkline: React.FC<{ data: number[] }> = ({ data }) => {
   const max = Math.max(...data, 1)
   const width = 80
@@ -32,12 +29,10 @@ const Sparkline: React.FC<{ data: number[] }> = ({ data }) => {
     x: data.length > 1 ? (i / (data.length - 1)) * width : width / 2,
     y: height - (val / max) * height,
   }))
-
   const path = points.reduce(
     (acc, p, i) => acc + (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`),
     '',
   )
-
   return (
     <svg
       width={width}
@@ -56,7 +51,6 @@ const Sparkline: React.FC<{ data: number[] }> = ({ data }) => {
     </svg>
   )
 }
-
 export const DisbursementReport: React.FC<DisbursementReportProps> = ({
   report,
   loading,
@@ -66,7 +60,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
   const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0])
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
-
   const [sortConfig, setSortConfig] = useState<{
     key: keyof IDisbursementReport | 'approve_uid_name'
     direction: 'asc' | 'desc'
@@ -74,17 +67,13 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
     key: 'approve_date',
     direction: 'desc',
   })
-
   const filteredReport = useMemo(() => {
     if (range === 'all') return report
-
     const now = new Date()
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
     return report.filter((rec) => {
       if (!rec.confirm_date) return false
       const confirmDate = new Date(rec.confirm_date.replace(' ', 'T')) // Odoo format to ISO
-
       switch (range) {
         case '3d': {
           const start = new Date(startOfToday)
@@ -123,34 +112,27 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       }
     })
   }, [report, range, customDate])
-
   const stats = useMemo(() => {
     const now = new Date()
     const todayStr = now.toISOString().split('T')[0]
     const yesterday = new Date(now)
     yesterday.setDate(yesterday.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
-
     const todayData = report.filter((r) => r.confirm_date && r.confirm_date.startsWith(todayStr))
     const yesterdayData = report.filter(
       (r) => r.confirm_date && r.confirm_date.startsWith(yesterdayStr),
     )
-
     const avg = (data: IDisbursementReport[]) =>
       data.length ? data.reduce((acc, r) => acc + r.approval_duration, 0) / data.length : 0
-
     const todayAvg = avg(todayData)
     const yesterdayAvg = avg(yesterdayData)
     const diffAvg = todayAvg - yesterdayAvg
-
     const fastest = filteredReport.length
       ? Math.min(...filteredReport.map((r) => r.approval_duration))
       : 0
     const slowest = filteredReport.length
       ? Math.max(...filteredReport.map((r) => r.approval_duration))
       : 0
-
-    // Classification
     const kinds = [...new Set(filteredReport.map((r) => r.kind))]
     const classification = kinds
       .map((k) => ({
@@ -158,14 +140,10 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
         avg: avg(filteredReport.filter((r) => r.kind === k)),
       }))
       .sort((a, b) => b.avg - a.avg)
-
     const maxAvg = classification.length ? Math.max(...classification.map((c) => c.avg)) : 0
-
-    // Top 5 slowest
     const top5Slowest = [...filteredReport]
       .sort((a, b) => b.approval_duration - a.approval_duration)
       .slice(0, 5)
-
     const getTrendData = (data: IDisbursementReport[], days: number) => {
       const result = []
       const baseDate = range === 'custom' ? new Date(customDate) : now
@@ -186,7 +164,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       }
       return result.reverse()
     }
-
     const trendDays =
       range === 'all'
         ? 30
@@ -204,7 +181,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
                     ? 1
                     : 3
     const trend = getTrendData(filteredReport, trendDays)
-
     return {
       todayAvg,
       yesterdayAvg,
@@ -219,12 +195,10 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       trend,
     }
   }, [report, filteredReport, range, customDate])
-
   const chartRange = useMemo(() => {
     const now = new Date()
     const end = now.getTime()
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-
     switch (range) {
       case '3d':
         return { min: startOfToday - 2 * 24 * 60 * 60 * 1000, max: end }
@@ -256,7 +230,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
         return { min: undefined, max: undefined }
     }
   }, [range, customDate])
-
   const sortedReport = useMemo(() => {
     const sorted = [...filteredReport]
     sorted.sort((a, b) => {
@@ -266,12 +239,10 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       let bValue: string | number = b[sortConfig.key as keyof IDisbursementReport] as
         | string
         | number
-
       if (sortConfig.key === 'approve_uid_name') {
         aValue = a.approve_uid ? a.approve_uid[1] : ''
         bValue = b.approve_uid ? b.approve_uid[1] : ''
       }
-
       if (aValue < bValue) {
         return sortConfig.direction === 'asc' ? -1 : 1
       }
@@ -282,14 +253,11 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
     })
     return sorted
   }, [filteredReport, sortConfig])
-
   const paginatedReport = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize
     return sortedReport.slice(startIndex, startIndex + pageSize)
   }, [sortedReport, currentPage])
-
   const totalPages = Math.ceil(sortedReport.length / pageSize)
-
   if (loading) {
     return (
       <div className="space-y-12">
@@ -341,7 +309,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       </div>
     )
   }
-
   if (report.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 border border-dashed border-hairline">
@@ -351,7 +318,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       </div>
     )
   }
-
   const rangeOptions = [
     { value: '3d', label: 'Last 3 Days' },
     { value: '7d', label: 'Last 7 Days' },
@@ -362,7 +328,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
     { value: 'custom', label: 'Specific Day' },
     { value: 'all', label: 'All Time' },
   ]
-
   const getKindVariant = (kind: string) => {
     switch (kind) {
       case 'new':
@@ -375,7 +340,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
         return 'ash'
     }
   }
-
   const handleSort = (key: keyof IDisbursementReport | 'approve_uid_name') => {
     setSortConfig((prev) => ({
       key,
@@ -383,19 +347,16 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
     }))
     setCurrentPage(1)
   }
-
   const getSortIcon = (key: keyof IDisbursementReport | 'approve_uid_name') => {
     if (sortConfig.key !== key) return '[ ]'
     return sortConfig.direction === 'asc' ? '[↑]' : '[↓]'
   }
-
   const openOdooRecord = (id: number) => {
     if (!envUrl) return
     const cleanUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl
     const url = `${cleanUrl}/web#id=${id}&model=sale.disbursement&view_type=form`
     window.open(url, '_blank')
   }
-
   return (
     <div className="space-y-12">
       {/* Filters Header */}
@@ -435,7 +396,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
           </div>
         </div>
       </div>
-
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
@@ -457,7 +417,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             {stats.diffAvg <= 0 ? '↓' : '↑'} {Math.abs(stats.diffAvg).toFixed(1)}m vs yesterday
           </div>
         </div>
-
         <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Total Approved
@@ -474,7 +433,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             Yesterday: {stats.yesterdayCount}
           </div>
         </div>
-
         <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Fastest
@@ -489,7 +447,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             </div>
           </div>
         </div>
-
         <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Slowest
@@ -505,7 +462,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Classification */}
         <div className="space-y-6">
@@ -542,7 +498,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             ))}
           </div>
         </div>
-
         {/* Top 5 Slowest */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center gap-2 border-l-4 border-danger pl-4">
@@ -591,7 +546,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
           </Table>
         </div>
       </div>
-
       <div className="border-t border-ink pt-12 space-y-8">
         <div className="flex items-center justify-between">
           <Typography
@@ -617,13 +571,11 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
                 }`}
           </Typography>
         </div>
-
         <ApprovalSpeedChart
           report={filteredReport}
           minDate={chartRange.min}
           maxDate={chartRange.max}
         />
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <LargeTrendChart
             title="Daily Approval Volume"
@@ -649,7 +601,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
             color="var(--color-danger, #ef4444)"
           />
         </div>
-
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Typography variant="h3" className="uppercase tracking-widest">

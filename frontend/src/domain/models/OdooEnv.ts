@@ -8,7 +8,6 @@ export interface OdooEnv {
   color?: string
   is_default?: boolean
 }
-
 export interface DisbursementReport {
   id: number
   name: string

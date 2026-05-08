@@ -4,7 +4,6 @@ import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Card, CardHeader, CardBody } from '../components/Card'
 import { Button } from '../components/Button'
 import { Typography } from '../components/Typography'
-
 interface EnvCardProps {
   env: OdooEnv
   testingEnvId: number | null
@@ -15,7 +14,6 @@ interface EnvCardProps {
   onDuplicate: (id: number) => void
   onSetDefault: (id: number) => void
 }
-
 export const EnvCard: React.FC<EnvCardProps> = ({
   env,
   testingEnvId,
@@ -34,7 +32,6 @@ export const EnvCard: React.FC<EnvCardProps> = ({
           DEFAULT
         </div>
       )}
-
       <CardHeader className="pt-8">
         <div className="space-y-4 w-full">
           <div className="flex items-center gap-4">
@@ -65,7 +62,6 @@ export const EnvCard: React.FC<EnvCardProps> = ({
               </Typography>
             </div>
           </div>
-
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 border-t border-hairline/50">
             {!env.is_default && (
               <Button
@@ -118,7 +114,6 @@ export const EnvCard: React.FC<EnvCardProps> = ({
           </div>
         </div>
       </CardHeader>
-
       <CardBody className="border-t border-hairline/50">
         <div className="grid grid-cols-2 gap-8 py-2">
           <div>

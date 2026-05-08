@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-
 type TabType =
   | 'tasks'
   | 'envs'
@@ -10,17 +9,14 @@ type TabType =
   | 'wiki'
   | 's3'
   | 'analytics'
-
 interface CommandPaletteProps {
   onNavigate: (tab: TabType) => void
   onAction: (action: string) => void
 }
-
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAction }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
-
   const commands = [
     { id: 'tasks', label: 'Go to Dashboard', type: 'nav' },
     { id: 'crons', label: 'Go to Cron Jobs', type: 'nav' },
@@ -33,9 +29,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
     { id: 'rank', label: 'AI Rank Tasks', type: 'action' },
     { id: 'zen', label: 'Enter Zen Mode', type: 'action' },
   ]
-
   const filtered = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -43,9 +37,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
         setIsOpen(true)
       }
       if (!isOpen) return
-
       if (e.key === 'Escape') setIsOpen(false)
-
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSelectedIndex((prev) => (prev + 1) % filtered.length)
@@ -69,9 +61,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, filtered, selectedIndex, onNavigate, onAction])
-
   if (!isOpen) return null
-
   return (
     <div className="fixed inset-0 z-[300] bg-canvas/80 backdrop-blur-sm flex items-start justify-center pt-[15vh]">
       <div className="w-full max-w-xl bg-canvas border border-ink shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-top-4 duration-200">
@@ -89,7 +79,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
           />
           <span className="text-[10px] font-bold opacity-30">[ESC to Close]</span>
         </div>
-
         <div className="max-h-[400px] overflow-auto py-2">
           {filtered.map((cmd, idx) => (
             <div

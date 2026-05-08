@@ -2,16 +2,13 @@ import React, { useState } from 'react'
 import { Cron } from 'react-js-cron'
 import 'react-js-cron/styles.css'
 import { X } from 'lucide-react'
-
 interface CronBuilderProps {
   value: string
   onChange: (value: string) => void
   onClose: () => void
 }
-
 export const CronBuilder: React.FC<CronBuilderProps> = ({ value, onChange, onClose }) => {
   const [internalValue, setInternalValue] = useState(value || '0 * * * *')
-
   return (
     <div className="fixed inset-0 z-[300] bg-canvas/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-canvas border border-ink shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
@@ -24,7 +21,6 @@ export const CronBuilder: React.FC<CronBuilderProps> = ({ value, onChange, onClo
             <X size={16} />
           </button>
         </div>
-
         <div className="p-8 space-y-6">
           <div className="cron-builder-container">
             <Cron
@@ -36,7 +32,6 @@ export const CronBuilder: React.FC<CronBuilderProps> = ({ value, onChange, onClo
               clearButton={false}
             />
           </div>
-
           <div className="pt-6 border-t border-hairline flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-mute uppercase">Current Expression</span>
@@ -44,7 +39,6 @@ export const CronBuilder: React.FC<CronBuilderProps> = ({ value, onChange, onClo
                 {internalValue}
               </code>
             </div>
-
             <div className="flex gap-2 justify-end pt-2">
               <button
                 onClick={onClose}
@@ -65,7 +59,6 @@ export const CronBuilder: React.FC<CronBuilderProps> = ({ value, onChange, onClo
           </div>
         </div>
       </div>
-
       <style
         dangerouslySetInnerHTML={{
           __html: `

@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-
 export const useKeyboardNavigation = (
   activeTab: string,
   setActiveTab: (tab: string) => void,
@@ -21,14 +20,12 @@ export const useKeyboardNavigation = (
         }
         return
       }
-
       if (e.key === '1') setActiveTab('tasks')
       if (e.key === '2') setActiveTab('crons')
       if (e.key === '3') setActiveTab('envs')
       if (e.key === '4') setActiveTab('wiki')
       if (e.key === '5') setActiveTab('s3')
       if (e.key === '6') setActiveTab('analytics')
-
       if (e.key === 'l' && e.ctrlKey) {
         const tabs = [
           'tasks',
@@ -59,7 +56,6 @@ export const useKeyboardNavigation = (
         const idx = tabs.indexOf(activeTab)
         setActiveTab(tabs[(idx - 1 + tabs.length) % tabs.length])
       }
-
       if (e.key === 'j') {
         if (itemCount > 0) {
           setSelectedIndex(Math.min(selectedIndex + 1, itemCount - 1))
@@ -76,11 +72,9 @@ export const useKeyboardNavigation = (
           window.scrollBy(0, -100)
         }
       }
-
       if (e.key === 'Enter' && itemCount > 0) {
         onExecute()
       }
-
       if (e.key === 'n' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault()
         onNew()
@@ -90,7 +84,6 @@ export const useKeyboardNavigation = (
         onSearch()
       }
     }
-
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [

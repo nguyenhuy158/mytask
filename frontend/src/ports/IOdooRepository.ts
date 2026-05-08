@@ -1,6 +1,5 @@
 import type { OdooEnv, DisbursementReport } from '../domain/models/OdooEnv'
 import type { Cron } from '../domain/models/Cron'
-
 export interface IOdooRepository {
   getEnvs(): Promise<OdooEnv[]>
   addEnv(env: Partial<OdooEnv>): Promise<OdooEnv>

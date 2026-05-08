@@ -12,7 +12,6 @@ import {
   Archive,
   Webhook,
 } from 'lucide-react'
-
 interface SidebarProps {
   activeTab: string
   setActiveTab: (tab: string) => void
@@ -22,7 +21,6 @@ interface SidebarProps {
   position: 'left' | 'right' | 'top' | 'bottom'
   setPosition: (pos: 'left' | 'right' | 'top' | 'bottom') => void
 }
-
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
@@ -33,12 +31,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setPosition,
 }) => {
   const { t, i18n } = useTranslation()
-
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'en' ? 'vi' : 'en'
     i18n.changeLanguage(nextLang)
   }
-
   const tabs = [
     { id: 'tasks', label: t('sidebar.task_manager'), icon: Layout },
     { id: 'crons', label: 'Cron Jobs', icon: Calendar },
@@ -51,16 +47,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'backups', label: 'Backups', icon: Archive },
     { id: 'webhooks', label: 'Webhooks', icon: Webhook },
   ]
-
   const isVertical = position === 'left' || position === 'right'
-
   const asideClasses = {
     left: 'w-14 md:w-64 border-r flex-col flex-shrink-0',
     right: 'w-14 md:w-64 border-l flex-col flex-shrink-0',
     top: 'w-full h-auto border-b flex-row items-center justify-between',
     bottom: 'w-full h-auto border-t flex-row items-center justify-between',
   }[position]
-
   return (
     <aside className={`${asideClasses} border-hairline bg-canvas z-20`}>
       <div
@@ -82,7 +75,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
       </div>
-
       <nav
         className={`flex-1 ${isVertical ? 'px-4 py-6 space-y-2' : 'px-6 flex flex-row gap-4 overflow-x-auto scrollbar-hide'}`}
       >
@@ -109,7 +101,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )
         })}
       </nav>
-
       <div
         className={`${isVertical ? 'p-4 md:p-6 border-t' : 'px-4 md:px-8 py-4 border-l'} border-hairline text-xs flex ${isVertical ? 'flex-col items-center md:items-start' : 'flex-row items-center gap-4 md:gap-8'}`}
       >
@@ -128,7 +119,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {wsConnected ? t('sidebar.live_sync_active') : t('sidebar.offline')}
           </span>
         </div>
-
         <div className={`flex ${isVertical ? 'mt-4 flex-col gap-4' : 'flex-row gap-4 md:gap-6'}`}>
           <div
             className={`flex items-center justify-between gap-4 ${isVertical ? 'hidden md:flex' : ''}`}

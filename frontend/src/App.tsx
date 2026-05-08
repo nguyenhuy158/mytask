@@ -33,7 +33,6 @@ import { useSystem } from './ui/hooks/useSystem'
 import { useKeyboardNavigation } from './ui/hooks/useKeyboardNavigation'
 import { wsAdapter } from './adapters/websocket/NativeWsAdapter'
 import type { TaskHistory } from './domain/models/System'
-
 type TabName =
   | 'tasks'
   | 'envs'
@@ -45,9 +44,7 @@ type TabName =
   | 's3'
   | 'analytics'
   | 'reports'
-
 type SidebarPosition = 'left' | 'right' | 'top' | 'bottom'
-
 function App() {
   const [activeTab, setActiveTab] = useState<TabName>(() => {
     const saved = localStorage.getItem('activeTab')
@@ -89,7 +86,6 @@ function App() {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : true
   })
-
   const [showAddModal, setShowAddModal] = useState(false)
   const [showAddWebhookModal, setShowAddWebhookModal] = useState(false)
   const [showAddEnvModal, setShowAddEnvModal] = useState(false)
@@ -97,7 +93,6 @@ function App() {
   const [showCronBuilder, setShowCronBuilder] = useState(false)
   const [editingEnv, setEditingEnv] = useState<OdooEnv | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
-
   const handleSetActiveTab = (
     tab:
       | 'tasks'
@@ -114,12 +109,10 @@ function App() {
     setActiveTab(tab)
     setSelectedIndex(0)
   }
-
   const handleSetSearchTerm = (term: string) => {
     setSearchTerm(term)
     setSelectedIndex(0)
   }
-
   const {
     setTasks,
     filteredTasks,
@@ -130,7 +123,6 @@ function App() {
     fetchRankedTasks,
     addTask,
   } = useTasks(searchTerm)
-
   const runTask = async (id: number) => {
     try {
       const result = await runTaskApi(id)
@@ -138,11 +130,10 @@ function App() {
         ...prev,
         [id]: { text: result, time: new Date().toLocaleTimeString() },
       }))
-    } catch {
-      // toast handled in hook
+    } catch (error) {
+      console.error('Failed to run task:', error)
     }
   }
-
   const {
     envs,
     report: odooReportData,
@@ -164,7 +155,6 @@ function App() {
     requestSort,
     filteredCrons,
   } = useOdoo(searchTerm)
-
   const handleImportEnvs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -180,7 +170,6 @@ function App() {
     reader.readAsText(file)
     e.target.value = ''
   }
-
   const {
     webhooks,
     s3Configs,
@@ -201,7 +190,6 @@ function App() {
     testWebhook: testWebhookApi,
     addS3Config,
   } = useSystem()
-
   useKeyboardNavigation(
     activeTab,
     handleSetActiveTab,
@@ -221,7 +209,6 @@ function App() {
       }
     },
   )
-
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark')
@@ -231,26 +218,21 @@ function App() {
       localStorage.setItem('theme', 'light')
     }
   }, [darkMode])
-
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab)
     if ((activeTab === 'crons' || activeTab === 'reports') && !selectedEnvId && envs.length > 0) {
       setSelectedEnvId(envs[0].id)
     }
   }, [activeTab, selectedEnvId, envs, setSelectedEnvId])
-
   useEffect(() => {
     localStorage.setItem('sidebarPosition', sidebarPosition)
   }, [sidebarPosition])
-
   useEffect(() => {
     localStorage.setItem('showPomodoro', String(showPomodoro))
   }, [showPomodoro])
-
   useEffect(() => {
     localStorage.setItem('showLogStream', String(showLogStream))
   }, [showLogStream])
-
   useEffect(() => {
     wsAdapter.connect(
       (data) => {
@@ -284,14 +266,12 @@ function App() {
     )
     return () => wsAdapter.disconnect()
   }, [setTasks])
-
   const handleRefresh = () => {
     fetchTasks()
     if (selectedEnvId) fetchEnvs()
     fetchAll()
     toast.success('Refreshed')
   }
-
   const handleTestEnv = async (id: number) => {
     setTestingEnvId(id)
     try {
@@ -300,15 +280,12 @@ function App() {
       setTestingEnvId(null)
     }
   }
-
   const handleSetDefaultEnv = async (id: number) => {
     await setDefaultEnv(id)
   }
-
   const handleDeleteEnv = async (id: number) => {
     await deleteEnv(id)
   }
-
   const testWebhook = async (id: number) => {
     setTestingWebhookId(id)
     try {
@@ -317,16 +294,13 @@ function App() {
       setTestingWebhookId(null)
     }
   }
-
   const containerClasses = {
     left: 'flex-row',
     right: 'flex-row-reverse',
     top: 'flex-col',
     bottom: 'flex-col-reverse',
   }[sidebarPosition]
-
   const selectedEnv = envs.find((e) => e.id === selectedEnvId)
-
   return (
     <div
       className={`flex h-screen bg-canvas overflow-hidden font-mono text-ink ${containerClasses}`}
@@ -340,7 +314,6 @@ function App() {
         position={sidebarPosition}
         setPosition={setSidebarPosition}
       />
-
       <main className="flex-1 flex flex-col relative overflow-hidden">
         <Header
           activeTab={activeTab}
@@ -355,7 +328,6 @@ function App() {
             else setShowAddModal(true)
           }}
         />
-
         <div className="flex-1 overflow-y-auto p-2 md:p-12">
           {activeTab === 'tasks' && (
             <div className="space-y-8 max-w-7xl mx-auto">
@@ -395,7 +367,6 @@ function App() {
                   </button>
                 </div>
               </div>
-
               <Dashboard
                 tasks={filteredTasks}
                 viewMode={viewMode}
@@ -405,12 +376,10 @@ function App() {
                 onUpdateStatus={updateTaskStatus}
                 selectedIndex={selectedIndex}
               />
-
               <AuditLogTable logs={auditLogs} onRefresh={fetchAll} />
               <HistoryTable history={history} />
             </div>
           )}
-
           {activeTab === 'crons' && (
             <div className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-ink pb-4 gap-4">
@@ -428,7 +397,6 @@ function App() {
                   className="w-full md:w-48"
                 />
               </div>
-
               <CronTable
                 crons={filteredCrons}
                 loading={!!odooLoading}
@@ -438,7 +406,6 @@ function App() {
                 onRun={runCron}
                 selectedIndex={selectedIndex}
               />
-
               {selectedEnvId && (
                 <div className="mt-12 space-y-12">
                   <div>
@@ -449,7 +416,6 @@ function App() {
               )}
             </div>
           )}
-
           {activeTab === 'reports' && (
             <div className="space-y-8">
               <div className="flex items-end justify-between border-b border-ink pb-4">
@@ -465,7 +431,6 @@ function App() {
                   className="w-48"
                 />
               </div>
-
               {selectedEnvId ? (
                 <DisbursementReport
                   report={odooReportData}
@@ -481,7 +446,6 @@ function App() {
               )}
             </div>
           )}
-
           {activeTab === 'envs' && (
             <div className="space-y-8">
               <div className="flex items-end justify-between border-b border-ink pb-4">
@@ -523,7 +487,6 @@ function App() {
               </div>
             </div>
           )}
-
           {activeTab === 'webhooks' && (
             <div className="space-y-8">
               <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Webhooks</h1>
@@ -540,7 +503,6 @@ function App() {
               </div>
             </div>
           )}
-
           {activeTab === 'config' && config && (
             <div className="space-y-8">
               <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
@@ -566,7 +528,6 @@ function App() {
                     ))}
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Widgets</h2>
                   <div className="flex gap-2">
@@ -592,7 +553,6 @@ function App() {
                     </button>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
                     Backup Policy
@@ -627,7 +587,6 @@ function App() {
                     />
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
                     External API Keys
@@ -642,7 +601,6 @@ function App() {
               </div>
             </div>
           )}
-
           {activeTab === 'backups' && (
             <div className="space-y-8">
               <div className="flex items-end justify-between border-b border-ink pb-4">
@@ -691,9 +649,7 @@ function App() {
               </div>
             </div>
           )}
-
           {activeTab === 'wiki' && <Wiki />}
-
           {activeTab === 's3' && (
             <div className="space-y-8">
               <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
@@ -702,7 +658,6 @@ function App() {
               <S3Explorer />
             </div>
           )}
-
           {activeTab === 'analytics' && (
             <div className="space-y-8">
               <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Analytics</h1>
@@ -711,9 +666,7 @@ function App() {
           )}
         </div>
       </main>
-
       {showFocusMode && <FocusMode onClose={() => setShowFocusMode(false)} />}
-
       {showAddModal && (
         <AddTaskModal
           tasks={filteredTasks}
@@ -725,7 +678,6 @@ function App() {
           }}
         />
       )}
-
       {showAddWebhookModal && (
         <AddWebhookModal
           onClose={() => setShowAddWebhookModal(false)}
@@ -735,7 +687,6 @@ function App() {
           }}
         />
       )}
-
       {showAddEnvModal && (
         <AddEnvModal
           onClose={() => setShowAddEnvModal(false)}
@@ -745,7 +696,6 @@ function App() {
           }}
         />
       )}
-
       {editingEnv && (
         <EditEnvModal
           env={editingEnv}
@@ -756,7 +706,6 @@ function App() {
           }}
         />
       )}
-
       {showAddS3Modal && (
         <AddS3Modal
           onClose={() => setShowAddS3Modal(false)}
@@ -766,7 +715,6 @@ function App() {
           }}
         />
       )}
-
       {showCronBuilder && (
         <CronBuilder
           value={backupCron}
@@ -774,7 +722,6 @@ function App() {
           onClose={() => setShowCronBuilder(false)}
         />
       )}
-
       <CommandPalette
         onNavigate={(tab) => {
           if (tab === 'shell') {
@@ -789,7 +736,6 @@ function App() {
           if (action === 'zen') setShowFocusMode(true)
         }}
       />
-
       <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">
         {showPomodoro && (
           <Draggable className="pointer-events-auto">
@@ -802,10 +748,8 @@ function App() {
           </Draggable>
         )}
       </div>
-
       <Toaster position="bottom-right" />
     </div>
   )
 }
-
 export default App

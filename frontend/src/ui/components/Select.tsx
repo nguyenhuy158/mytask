@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-
 interface Option {
   value: string | number
   label: string
 }
-
 interface SelectProps {
   value: string | number
   options: Option[]
@@ -12,7 +10,6 @@ interface SelectProps {
   placeholder?: string
   className?: string
 }
-
 export const Select: React.FC<SelectProps> = ({
   value,
   options,
@@ -22,9 +19,7 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-
   const selectedOption = options.find((o) => o.value === value)
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -34,7 +29,6 @@ export const Select: React.FC<SelectProps> = ({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <button
@@ -47,7 +41,6 @@ export const Select: React.FC<SelectProps> = ({
         </span>
         <span className="text-[10px] opacity-30 ml-4">{isOpen ? '▴' : '▾'}</span>
       </button>
-
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 min-w-[200px] bg-canvas border border-ink shadow-xl z-[100] py-2 animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="max-h-[300px] overflow-auto">

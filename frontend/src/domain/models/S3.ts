@@ -8,7 +8,6 @@ export interface S3Config {
   secret_key: string
   active: boolean
 }
-
 export interface S3Backup {
   key: string
   size: number

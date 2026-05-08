@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-
 export const PomodoroTimer = () => {
   const [minutes, setMinutes] = useState(25)
   const [seconds, setSeconds] = useState(0)
   const [isActive, setIsActive] = useState(false)
   const [mode, setMode] = useState<'work' | 'break'>('work')
   const [isCollapsed, setIsCollapsed] = useState(true)
-
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null
     if (isActive) {
@@ -38,21 +36,18 @@ export const PomodoroTimer = () => {
     }
     return () => clearInterval(interval)
   }, [isActive, seconds, minutes, mode])
-
   const toggle = () => setIsActive(!isActive)
   const reset = () => {
     setIsActive(false)
     setMinutes(mode === 'work' ? 25 : 5)
     setSeconds(0)
   }
-
   const renderProgressBar = () => {
     const total = mode === 'work' ? 25 * 60 : 5 * 60
     const current = minutes * 60 + seconds
     const progress = Math.round(((total - current) / total) * 10)
     return `[${'#'.repeat(progress)}${'.'.repeat(10 - progress)}]`
   }
-
   return (
     <div
       className={`border border-ink bg-canvas text-ink font-mono transition-all duration-300 relative z-[100] ${isCollapsed ? 'p-2 w-28 md:w-32' : 'p-4 w-[calc(100vw-2rem)] md:w-64'}`}
@@ -66,7 +61,6 @@ export const PomodoroTimer = () => {
           {isCollapsed ? '[+]' : '[—]'}
         </button>
       </div>
-
       {!isCollapsed ? (
         <>
           <div className="text-4xl font-bold tracking-tighter">

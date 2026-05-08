@@ -1,33 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
-import { Download, Upload } from 'lucide-react'
-import { Sidebar } from './ui/layouts/Sidebar'
-import { Header } from './ui/layouts/Header'
-import { Dashboard } from './ui/features/Dashboard'
-import { CronTable } from './ui/features/CronTable'
-import { DisbursementReport } from './ui/features/DisbursementReport'
-import { AuditLogTable } from './ui/features/AuditLogTable'
-import { HistoryTable } from './ui/features/HistoryTable'
-import { EnvCard } from './ui/features/EnvCard'
-import type { OdooEnv } from './domain/models/OdooEnv'
-import { WebhookCard } from './ui/features/WebhookCard'
-import { Select } from './ui/components/Select'
-import { PomodoroTimer } from './ui/features/PomodoroTimer'
-import { FocusMode } from './ui/features/FocusMode'
-import { Wiki } from './ui/features/Wiki'
-import { S3Explorer } from './ui/features/S3Explorer'
-import { AsciiDashboard } from './ui/features/AsciiDashboard'
-import { OdooShell } from './ui/features/OdooShell'
-import { LogStream } from './ui/features/LogStream'
-import { CommandPalette } from './ui/components/CommandPalette'
-import { Draggable } from './ui/components/Draggable'
-import { CronBuilder } from './ui/components/CronBuilder'
-import { AddS3Modal } from './ui/features/AddS3Modal'
-import { AddWebhookModal } from './ui/features/AddWebhookModal'
-import { AddEnvModal } from './ui/features/AddEnvModal'
-import { EditEnvModal } from './ui/features/EditEnvModal'
-import { AddTaskModal } from './ui/features/AddTaskModal'
 import { useTasks } from './ui/hooks/useTasks'
+
 import { useOdoo } from './ui/hooks/useOdoo'
 import { useSystem } from './ui/hooks/useSystem'
 import { useKeyboardNavigation } from './ui/hooks/useKeyboardNavigation'
@@ -174,7 +148,6 @@ function App() {
   const {
     webhooks,
     s3Configs,
-    auditLogs,
     config,
     backups,
     backupCron,
@@ -432,7 +405,7 @@ function App() {
                 }}
                 selectedIndex={selectedIndex}
               />
-              <AuditLogTable logs={auditLogs} onRefresh={fetchAll} />
+              <AuditLogTable />
               <HistoryTable history={history} />
             </div>
           )}
@@ -641,9 +614,11 @@ function App() {
                     ))}
                     <button
                       onClick={async () => {
-                        const name = window.prompt('Name:')
-                        const type = window.prompt('Type (slack/telegram/webhook):')
-                        const url = window.prompt('Webhook URL:')
+                        const name = await promptAction('Name:')
+                        if (!name) return
+                        const type = await promptAction('Type (slack/telegram/webhook):')
+                        if (!type) return
+                        const url = await promptAction('Webhook URL:')
                         if (name && type && url) {
                           await fetch(
                             `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications`,
@@ -844,7 +819,7 @@ function App() {
           if (action === 'rank') fetchRankedTasks()
           if (action === 'zen') setShowFocusMode(true)
           if (action === 'ai-parse') {
-            const text = window.prompt(
+            const text = await promptAction(
               'Enter your task in natural language (e.g., "Meeting tomorrow at 9am"):',
             )
             if (text) {

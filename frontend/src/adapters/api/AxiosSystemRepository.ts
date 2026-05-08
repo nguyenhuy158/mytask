@@ -95,8 +95,11 @@ export class AxiosSystemRepository implements ISystemRepository {
     const res = await axios.post(`${API_BASE}/tasks/backup`)
     return res.data
   }
-  async getAuditLogs(): Promise<AuditLog[]> {
-    const res = await axios.get(`${API_BASE}/audit-logs`)
+  async getAuditLogs(
+    skip: number = 0,
+    take: number = 20,
+  ): Promise<{ logs: AuditLog[]; total: number }> {
+    const res = await axios.get(`${API_BASE}/audit-logs`, { params: { skip, take } })
     return res.data
   }
   async getSchedulerHealth(): Promise<SchedulerHealth> {

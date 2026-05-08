@@ -396,8 +396,10 @@ async def get_history(service: TaskService = Depends(get_task_service)):
 
 
 @router.get("/audit-logs")
-async def get_audit_logs(service: TaskService = Depends(get_task_service)):
-    return await service.get_audit_logs()
+async def get_audit_logs(
+    skip: int = 0, take: int = 20, service: TaskService = Depends(get_task_service)
+):
+    return await service.get_audit_logs(skip=skip, take=take)
 
 
 @router.get("/health/scheduler")

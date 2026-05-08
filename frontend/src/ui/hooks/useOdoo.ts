@@ -1,10 +1,20 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
 import type { Cron } from '../../domain/models/Cron'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { odooRepository } from '../../adapters/api/AxiosOdooRepository'
 import { sortCrons, filterCrons } from '../../domain/services/CronService'
 import toast from 'react-hot-toast'
+
+export const useOdooHealth = (envs: OdooEnv[]) => {
+  return useQueries({
+    queries: envs.map((env) => ({
+      queryKey: ['odooHealth', env.id],
+      queryFn: () => odooRepository.testConnection(env.id),
+      refetchInterval: 30000, // Every 30s
+    })),
+  })
+}
 
 export const useOdoo = (searchTerm: string) => {
   const queryClient = useQueryClient()

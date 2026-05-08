@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { AddS3Modal, type S3Config } from './AddS3Modal'
 import toast from 'react-hot-toast'
+import { confirmAction } from '@/lib/toast-confirm'
 import { Skeleton } from '../components/Skeleton'
 export const S3Explorer = () => {
   const [configs, setConfigs] = useState<S3Config[]>([])
@@ -49,7 +50,7 @@ export const S3Explorer = () => {
   }
   const deleteConfig = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm('Delete this S3 configuration?')) return
+    if (!(await confirmAction('Delete this S3 configuration?'))) return
     try {
       await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/s3-configs/${id}`, {
         method: 'DELETE',

@@ -27,6 +27,6 @@ export interface ISystemRepository {
   getDefaultBackupTarget(): Promise<string>
   updateDefaultBackupTarget(target: string): Promise<void>
   triggerBackup(): Promise<{ status: string; result: string }>
-  getAuditLogs(): Promise<AuditLog[]>
+  getAuditLogs(skip?: number, take?: number): Promise<{ logs: AuditLog[]; total: number }>
   getSchedulerHealth(): Promise<SchedulerHealth>
 }

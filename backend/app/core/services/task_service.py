@@ -192,8 +192,10 @@ class TaskService:
     async def get_history(self, take: int = 50) -> list[Any]:
         return await self.repository.get_history(take=take)
 
-    async def get_audit_logs(self, take: int = 100) -> list[Any]:
-        return await self.repository.get_audit_logs(take=take)
+    async def get_audit_logs(self, skip: int = 0, take: int = 20) -> dict[str, Any]:
+        logs = await self.repository.get_audit_logs(skip=skip, take=take)
+        total = await self.repository.count_audit_logs()
+        return {"logs": logs, "total": total}
 
     async def decompose_task(self, task_id: int) -> list[Any]:
         task = await self.repository.get_task_by_id(task_id)

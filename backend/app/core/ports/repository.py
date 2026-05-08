@@ -47,7 +47,11 @@ class RepositoryPort(ABC):
         pass
 
     @abstractmethod
-    async def get_audit_logs(self, take: int = 100) -> list[Any]:
+    async def get_audit_logs(self, skip: int = 0, take: int = 20) -> list[Any]:
+        pass
+
+    @abstractmethod
+    async def count_audit_logs(self) -> int:
         pass
 
     @abstractmethod

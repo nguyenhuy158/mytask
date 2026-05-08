@@ -4,13 +4,17 @@ import type { Task } from '../../domain/models/Task'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Button } from '../components/Button'
 import { Select } from '../components/Select'
+import { CronBuilder } from '../components/CronBuilder'
+
 interface AddTaskModalProps {
   onClose: () => void
   onAdd: (task: Partial<Task>) => void
   tasks: Task[]
   envs: OdooEnv[]
 }
+
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, tasks, envs }) => {
+  const [showCronBuilder, setShowCronBuilder] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,6 +23,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
     estimated_time: 60,
     deadline: '',
     dependencies: '',
+    cron_expression: '',
     odoo_env_id: (envs.find((e) => e.is_default)?.id || null) as number | null,
     odoo_project_id: null as number | null,
     odoo_task_id: null as number | null,
@@ -90,6 +95,28 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
                   setFormData({ ...formData, estimated_time: parseInt(e.target.value) })
                 }
               />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+              Cron_Expression (Optional)
+            </label>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold tabular-nums"
+                placeholder="0 * * * *"
+                value={formData.cron_expression}
+                onChange={(e) => setFormData({ ...formData, cron_expression: e.target.value })}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-[10px] uppercase font-bold"
+                onClick={() => setShowCronBuilder(true)}
+              >
+                [BUILD]
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-8">
@@ -194,6 +221,13 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
           </div>
         </form>
       </div>
+      {showCronBuilder && (
+        <CronBuilder
+          value={formData.cron_expression}
+          onChange={(val) => setFormData({ ...formData, cron_expression: val })}
+          onClose={() => setShowCronBuilder(false)}
+        />
+      )}
     </div>
   )
 }

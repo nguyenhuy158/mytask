@@ -4,6 +4,7 @@ import type { Task } from '../../domain/models/Task'
 import { taskRepository } from '../../adapters/api/AxiosTaskRepository'
 import { filterTasks } from '../../domain/services/TaskService'
 import toast from 'react-hot-toast'
+import { confirmAction } from '@/lib/toast-confirm'
 
 export const useTasks = (searchTerm: string) => {
   const queryClient = useQueryClient()
@@ -28,21 +29,49 @@ export const useTasks = (searchTerm: string) => {
 
   const deleteTaskMutation = useMutation({
     mutationFn: (id: number) => taskRepository.deleteTask(id),
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks'])
+      queryClient.setQueryData<Task[]>(['tasks'], (old) => old?.filter((t) => t.id !== id))
+      return { previousTasks }
+    },
+    onError: (err, id, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks'], context.previousTasks)
+      }
+      toast.error('Failed to delete task')
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+    onSuccess: () => {
       toast.success('Task deleted')
     },
-    onError: () => toast.error('Failed to delete task'),
   })
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
       taskRepository.updateStatus(id, status),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks'])
+      queryClient.setQueryData<Task[]>(['tasks'], (old) =>
+        old?.map((t) => (t.id === id ? { ...t, status } : t)),
+      )
+      return { previousTasks }
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks'], context.previousTasks)
+      }
+      toast.error('Failed to update status')
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+    onSuccess: (_, variables) => {
       toast.success(`Moved to ${variables.status.toUpperCase()}`)
     },
-    onError: () => toast.error('Failed to update status'),
   })
 
   const runTaskMutation = useMutation({
@@ -62,7 +91,7 @@ export const useTasks = (searchTerm: string) => {
 
   const deleteTask = useCallback(
     async (id: number) => {
-      if (!confirm('Delete this task?')) return
+      if (!(await confirmAction('Delete this task?'))) return
       return deleteTaskMutation.mutateAsync(id)
     },
     [deleteTaskMutation],

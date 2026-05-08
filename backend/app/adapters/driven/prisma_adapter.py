@@ -44,8 +44,13 @@ class PrismaAdapter(RepositoryPort):
         await connect_db()
         await db.auditlog.create(data={"action": action, "details": details})
 
-    async def get_audit_logs(self, take: int = 100) -> list[Any]:
-        return await db.auditlog.find_many(order={"timestamp": "desc"}, take=take)
+    async def get_audit_logs(self, skip: int = 0, take: int = 20) -> list[Any]:
+        return await db.auditlog.find_many(
+            order={"timestamp": "desc"}, skip=skip, take=take
+        )
+
+    async def count_audit_logs(self) -> int:
+        return await db.auditlog.count()
 
     async def get_system_config(self, key: str) -> Any | None:
         return await db.systemconfig.find_unique(where={"key": key})

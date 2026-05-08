@@ -4,8 +4,9 @@ import { systemRepository } from '../../adapters/api/AxiosSystemRepository'
 import type { Webhook } from '../../domain/models/Webhook'
 import type { S3Config } from '../../domain/models/S3'
 import toast from 'react-hot-toast'
+import { confirmAction } from '@/lib/toast-confirm'
 
-export const useSystem = () => {
+export const useSystem = (skip: number = 0, take: number = 20) => {
   const queryClient = useQueryClient()
 
   const { data: webhooks = [] } = useQuery({
@@ -18,11 +19,14 @@ export const useSystem = () => {
     queryFn: () => systemRepository.getS3Configs(),
   })
 
-  const { data: auditLogs = [] } = useQuery({
-    queryKey: ['auditLogs'],
-    queryFn: () => systemRepository.getAuditLogs(),
-    refetchInterval: 10000, // Polling logs every 10s
+  const { data: auditLogsData = { logs: [], total: 0 } } = useQuery({
+    queryKey: ['auditLogs', skip, take],
+    queryFn: () => systemRepository.getAuditLogs(skip, take),
+    refetchInterval: 10000,
   })
+
+  const auditLogs = auditLogsData.logs
+  const totalLogs = auditLogsData.total
 
   const { data: config = null } = useQuery({
     queryKey: ['systemConfig'],
@@ -89,6 +93,7 @@ export const useSystem = () => {
     webhooks,
     s3Configs,
     auditLogs,
+    totalLogs,
     config,
     backupCron,
     defaultBackupTarget,
@@ -102,12 +107,12 @@ export const useSystem = () => {
     addS3Config: (config: Partial<S3Config>) => addS3ConfigMutation.mutate(config),
     downloadBackup: (filename: string) => systemRepository.downloadBackup(filename),
     restoreBackup: async (filename: string) => {
-      if (!confirm(`Restore from ${filename}?`)) return
+      if (!(await confirmAction(`Restore from ${filename}?`))) return
       await systemRepository.restoreBackup(filename)
       window.location.reload()
     },
     deleteBackup: async (filename: string) => {
-      if (!confirm('Delete this backup?')) return
+      if (!(await confirmAction('Delete this backup?'))) return
       await systemRepository.deleteBackup(filename)
       queryClient.invalidateQueries({ queryKey: ['backups'] })
     },

@@ -40,12 +40,12 @@ export const Select: React.FC<SelectProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-transparent border-b border-hairline hover:border-ink py-1 text-xs font-bold transition-colors outline-none"
+        className="w-full flex items-center justify-between bg-transparent border-b border-hairline hover:border-ink py-1 text-sm font-bold transition-colors outline-none"
       >
         <span className={!selectedOption ? 'text-mute' : ''}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <span className="text-[10px] opacity-30 ml-4">{isOpen ? '▲' : '▼'}</span>
+        <span className="text-[10px] opacity-30 ml-4">{isOpen ? '▴' : '▾'}</span>
       </button>
 
       {isOpen && (
@@ -62,7 +62,7 @@ export const Select: React.FC<SelectProps> = ({
                   option.value === value ? 'bg-ink text-on-primary' : 'hover:bg-surface-soft'
                 }`}
               >
-                <span className="text-xs font-bold uppercase">
+                <span className="text-sm font-bold">
                   {option.value === value && <span className="mr-2">✓</span>}
                   {option.label}
                 </span>

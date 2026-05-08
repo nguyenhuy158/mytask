@@ -198,6 +198,29 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
 
   return (
     <div className="space-y-12">
+      {/* Filters Header */}
+      <div className="flex items-center justify-between border-b border-ink pb-8">
+        <Typography variant="h2" className="uppercase tracking-tighter">
+          Disbursement Report
+        </Typography>
+        <div className="flex items-center gap-12">
+          <div className="flex items-center gap-16">
+            <Typography
+              variant="label"
+              className="text-ash uppercase tracking-[0.2em] text-[11px] whitespace-nowrap"
+            >
+              Time Range:
+            </Typography>
+            <Select
+              value={range}
+              options={rangeOptions}
+              onChange={(val) => setRange(val as FilterRange)}
+              className="w-56"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="border border-ink p-6 space-y-2 bg-canvas">
@@ -324,17 +347,6 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
               ? 'Showing all records'
               : `Showing last ${range === '3d' ? '3 days' : range === '7d' ? '7 days' : range === '30d' ? '30 days' : range === 'this_month' ? 'this month' : 'last month'}`}
           </Typography>
-          <div className="flex items-center gap-4">
-            <span className="text-[10px] font-bold text-ash uppercase tracking-tighter">
-              Time Range:
-            </span>
-            <Select
-              value={range}
-              options={rangeOptions}
-              onChange={(val) => setRange(val as FilterRange)}
-              className="w-40"
-            />
-          </div>
         </div>
 
         <ApprovalSpeedChart report={filteredReport} />

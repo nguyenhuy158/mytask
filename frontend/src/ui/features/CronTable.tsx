@@ -51,6 +51,9 @@ export const CronTable: React.FC<CronTableProps> = ({
         <TableHeaderCell onClick={() => onRequestSort('name')}>
           <div className="flex items-center gap-2">Name {getSortIcon('name')}</div>
         </TableHeaderCell>
+        <TableHeaderCell onClick={() => onRequestSort('model')}>
+          <div className="flex items-center gap-2">Model {getSortIcon('model')}</div>
+        </TableHeaderCell>
         <TableHeaderCell onClick={() => onRequestSort('interval')}>
           <div className="flex items-center gap-2">Interval {getSortIcon('interval')}</div>
         </TableHeaderCell>
@@ -69,8 +72,9 @@ export const CronTable: React.FC<CronTableProps> = ({
               {idx === selectedIndex && <span className="mr-2">»</span>}
               {cron.name}
             </TableCell>
+            <TableCell className="text-[10px] font-bold text-ash uppercase">{cron.model}</TableCell>
             <TableCell className="text-mute font-bold">
-              EVERY {cron.interval_number} {cron.interval_type.toUpperCase()}
+              EVERY {cron.interval_number} {cron.interval_type?.toUpperCase() || ''}
             </TableCell>
             <TableCell className="font-bold text-[11px] text-ash tabular-nums">
               {cron.nextcall}

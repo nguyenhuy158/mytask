@@ -92,6 +92,8 @@ export const useOdoo = (searchTerm: string) => {
   useEffect(() => {
     const init = async () => {
       if (selectedEnvId) {
+        setCrons([])
+        setReport([])
         setLoading('fetching')
         try {
           await Promise.all([fetchCrons(selectedEnvId), fetchReport(selectedEnvId)])

@@ -33,6 +33,7 @@ class OdooAdapter(OdooPort):
                     "nextcall",
                     "interval_number",
                     "interval_type",
+                    "model_id",
                 ]
             },
         )

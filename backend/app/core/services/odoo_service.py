@@ -45,7 +45,18 @@ class OdooService:
         env = await self.repository.get_odoo_env_by_id(env_id)
         if not env:
             raise Exception("Environment not found")
-        return self.odoo_port.get_crons(env.url, env.db, env.username, env.password)
+        crons = self.odoo_port.get_crons(env.url, env.db, env.username, env.password)
+        for cron in crons:
+            if not isinstance(cron.get("interval_type"), str):
+                cron["interval_type"] = str(cron.get("interval_type") or "")
+
+            # Handle model_id (many2one returns [id, name])
+            model_id = cron.get("model_id")
+            if isinstance(model_id, (list, tuple)) and len(model_id) > 1:
+                cron["model"] = model_id[1]
+            else:
+                cron["model"] = ""
+        return crons
 
     async def toggle_cron(self, env_id: int, cron_id: int, active: bool) -> Any:
         env = await self.repository.get_odoo_env_by_id(env_id)

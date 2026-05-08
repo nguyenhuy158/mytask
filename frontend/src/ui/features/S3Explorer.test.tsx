@@ -81,6 +81,11 @@ describe('S3Explorer Component', () => {
   it('opens add modal when [ADD] is clicked', async () => {
     render(<S3Explorer />)
     
+    // Wait for initial load to settle to avoid act warnings from useEffect
+    await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/s3-configs'))
+    })
+    
     fireEvent.click(screen.getByText('[ADD]'))
     expect(screen.getByTestId('add-s3-modal')).toBeDefined()
   })
@@ -110,9 +115,11 @@ describe('S3Explorer Component', () => {
     render(<S3Explorer />)
     
     await waitFor(() => {
-        const deleteButtons = screen.getAllByText('[X]')
-        fireEvent.click(deleteButtons[0])
+        expect(screen.getByText('S3 One')).toBeDefined()
     })
+    
+    const deleteButtons = screen.getAllByText('[X]')
+    fireEvent.click(deleteButtons[0])
     
     expect(global.fetch).not.toHaveBeenCalledWith(
       expect.stringContaining('/s3-configs/1'),

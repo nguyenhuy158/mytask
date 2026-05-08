@@ -5,16 +5,20 @@
 - **Frontend:** React, TanStack Query v5, Zustand, Tailwind CSS, Shadcn UI.
 
 ## Critical Constraints
+- **80% COVERAGE:** Mandatory for both FE and BE. Commits WILL fail if < 80%.
+- **TEST PURITY:** All tests must pass with **ZERO** warnings or errors in console/logs.
 - **NO COMMENTS:** Never add `#` or `//` explanations. Code must be self-documenting.
-- **NO ALERTS:** Never use `alert()` or `confirm()`. Use `toast` (react-hot-toast) for notifications.
-- **TYPOGRAPHY:** Berkeley Mono ONLY. No sans-serif or serif fonts allowed anywhere.
-- **AESTHETIC:** Follow `design.md` strictly. High-contrast, cream/ink, monospace, 4px corners.
+- **NO ALERTS:** Never use `alert()` or `confirm()`. Use `toast` (react-hot-toast).
+- **TYPOGRAPHY:** Berkeley Mono ONLY. No sans-serif or serif fonts allowed.
+- **AESTHETIC:** Follow `design.md`. High-contrast, cream/ink, monospace, 4px corners.
 
 ## Commands & Workflows
+- **Test & Coverage:** `make test` (full suite), `make test-backend`, `make test-frontend`.
+- **View Coverage:** `make cov` (opens HTML reports for both).
 - **Start All:** `make dev-local` (backend:8000, frontend:5173).
 - **DB Changes:** `cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate`.
 - **Frontend UI:** Use `npx shadcn-ui@latest add <component>` in `frontend/`.
-- **Lint/Format:** `make lint` and `make format`.
+- **Verify:** `make lint` and `make format` before committing.
 
 ## Architecture
 - **Backend (Hexagonal):**
@@ -28,12 +32,9 @@
     - `src/ui/`: Features (smart) and Components (dumb/Shadcn).
     - **Path Alias:** Use `@/` to refer to `src/`.
 
-## Domain Specifics
-- **Odoo:** Managed via `backend/app/rpc.py` and `OdooAdapter`.
-- **Tasks:** Central entity. Track `cron_expression` for scheduling.
-- **Audit Logs:** Use `prisma_adapter.add_audit_log` for any system-level action.
-
 ## Common Pitfalls
 - **Prisma Client:** Run `prisma generate` in `backend/` if imports fail.
 - **Imports:** Backend uses relative imports (e.g., `from ...core...`).
 - **Tailwind:** Colors and 4px radius are strictly defined in `tailwind.config.js`.
+- **Browser APIs:** Mock `localStorage`, `URL.createObjectURL`, and `i18n` in FE tests.
+- **Pre-commit:** Enforces linting and 80% coverage. Do not bypass without extreme reason.

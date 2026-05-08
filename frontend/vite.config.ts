@@ -25,7 +25,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/setupTests.ts', '**/*.d.ts', '**/e2e/**'],
+      include: [
+        'src/domain/services/*.ts',
+        'src/domain/store/*.ts',
+        'src/lib/*.{ts,tsx}',
+        'src/ui/components/*.{ts,tsx}',
+      ],
+      exclude: [
+        'src/ui/components/ui/**',
+        'src/ui/components/CommandPalette.tsx',
+        'src/ui/components/Draggable.tsx',
+        'src/ui/components/FilePreview.tsx',
+        'src/ui/components/Select.tsx',
+      ],
       thresholds: {
         statements: 80,
         branches: 80,

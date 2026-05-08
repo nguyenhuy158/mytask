@@ -16,8 +16,11 @@ class WebSocketAdapter(BroadcastPort):
             self.active_connections.remove(websocket)
 
     async def broadcast(self, message: dict):
+        active = []
         for connection in self.active_connections:
             try:
                 await connection.send_json(message)
+                active.append(connection)
             except Exception:
-                pass
+                continue
+        self.active_connections = active

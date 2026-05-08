@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from ..entities.models import FileAttachmentSchema, TaskSchema
@@ -175,14 +175,14 @@ class TaskService:
 
     async def start_timer(self, task_id: int) -> Any:
         return await self.repository.update_task_timer(
-            task_id, timer_started_at=datetime.utcnow()
+            task_id, timer_started_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
 
     async def stop_timer(self, task_id: int) -> Any:
         task = await self.repository.get_task_by_id(task_id)
         if not task or not task.timer_started_at:
             return {"status": "error"}
-        delta = datetime.utcnow() - task.timer_started_at
+        delta = datetime.now(timezone.utc).replace(tzinfo=None) - task.timer_started_at
         new_total = task.total_seconds + int(delta.total_seconds())
         await self.repository.update_task_timer(
             task_id, timer_started_at=None, total_seconds=new_total
@@ -270,7 +270,9 @@ class TaskService:
         def calculate_score(task):
             score = (task.priority or 3) * 10
             if task.deadline:
-                days_left = (task.deadline - datetime.utcnow()).days
+                days_left = (
+                    task.deadline - datetime.now(timezone.utc).replace(tzinfo=None)
+                ).days
                 score += max(0, 30 - days_left) * 2
             if task.estimated_time:
                 score -= task.estimated_time / 60

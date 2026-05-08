@@ -2,29 +2,9 @@ import asyncio
 import logging
 from xmlrpc.server import SimpleXMLRPCDispatcher
 
-from ...core.services.task_service import TaskService
 from ..driven.database import connect_db
-from ..driven.http_adapter import HttpAdapter
-from ..driven.odoo_adapter import OdooAdapter
-from ..driven.prisma_adapter import PrismaAdapter
-from ..driven.s3_adapter import S3Adapter
-from .websocket_adapter import WebSocketAdapter
 
 logger = logging.getLogger(__name__)
-prisma_adapter = PrismaAdapter()
-http_adapter = HttpAdapter()
-odoo_adapter = OdooAdapter()
-s3_adapter = S3Adapter()
-ws_adapter = WebSocketAdapter()
-task_service = TaskService(
-    repository=prisma_adapter,
-    external_api=http_adapter,
-    notification=http_adapter,
-    broadcast=ws_adapter,
-    odoo_port=odoo_adapter,
-    storage=s3_adapter,
-)
-dispatcher = SimpleXMLRPCDispatcher(allow_none=True, encoding=None)
 
 
 def run_async(coro):
@@ -33,13 +13,23 @@ def run_async(coro):
     try:
         return loop.run_until_complete(coro)
     finally:
+        try:
+            coro.close()
+        except Exception:
+            pass
         loop.close()
+
+
+def get_task_service():
+    from ...main import task_service
+
+    return task_service
 
 
 def list_tasks_rpc():
     async def _list():
         await connect_db()
-        tasks = await task_service.list_tasks()
+        tasks = await get_task_service().list_tasks()
         return [
             {"id": t.id, "name": t.name, "type": t.task_type, "status": t.status}
             for t in tasks
@@ -51,7 +41,7 @@ def list_tasks_rpc():
 def run_task_rpc(task_id):
     async def _run():
         await connect_db()
-        result = await task_service.execute_task(task_id)
+        result = await get_task_service().execute_task(task_id)
         if result is None:
             return {"status": "error", "message": "Task not found"}
         return {"status": "success", "result": result}
@@ -62,7 +52,7 @@ def run_task_rpc(task_id):
 def get_history_rpc(limit=10):
     async def _history():
         await connect_db()
-        history = await task_service.get_history(take=limit)
+        history = await get_task_service().get_history(take=limit)
         return [
             {
                 "id": h.id,
@@ -76,6 +66,7 @@ def get_history_rpc(limit=10):
     return run_async(_history())
 
 
+dispatcher = SimpleXMLRPCDispatcher(allow_none=True, encoding=None)
 dispatcher.register_function(list_tasks_rpc, "tasks.list")
 dispatcher.register_function(run_task_rpc, "tasks.run")
 dispatcher.register_function(get_history_rpc, "tasks.history")

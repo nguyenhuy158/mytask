@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import requests
@@ -67,7 +67,9 @@ class HttpAdapter(ExternalApiPort, NotificationPort):
                         "title": f"{icon} {title}",
                         "description": message,
                         "color": color,
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(timezone.utc)
+                        .replace(tzinfo=None)
+                        .isoformat(),
                     }
                 ]
             }

@@ -61,7 +61,9 @@ export default {
         mono: ['Berkeley Mono', 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
-        sm: '4px',
+        lg: 'var(--radius)',
+        md: 'var(--radius)',
+        sm: 'var(--radius)',
       },
       spacing: {
         section: '96px',

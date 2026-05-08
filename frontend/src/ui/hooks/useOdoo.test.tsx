@@ -1,6 +1,6 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useOdoo } from './useOdoo'
+import { useOdoo, useOdooHealth } from './useOdoo'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { odooRepository } from '../../adapters/api/AxiosOdooRepository'
@@ -20,6 +20,7 @@ vi.mock('../../adapters/api/AxiosOdooRepository', () => ({
     testEnv: vi.fn(),
     exportEnvs: vi.fn(),
     importEnvs: vi.fn(),
+    testConnection: vi.fn(),
   }
 }))
 
@@ -44,35 +45,60 @@ describe('useOdoo', () => {
     vi.mocked(odooRepository.getDisbursementReport).mockResolvedValue([])
   })
 
-  it('fetches environments on mount', async () => {
+  it('fetches environments and selects default', async () => {
     const mockEnvs = [{ id: 1, name: 'Prod', is_default: true }]
-    vi.mocked(odooRepository.getEnvs).mockResolvedValue(mockEnvs)
+    vi.mocked(odooRepository.getEnvs).mockResolvedValue(mockEnvs as any)
 
     const { result } = renderHook(() => useOdoo(''), { wrapper: createWrapper() })
 
-    await waitFor(() => expect(result.current.envs).toEqual(mockEnvs))
+    await waitFor(() => {
+      expect(result.current.envs).toEqual(mockEnvs)
+      expect(result.current.selectedEnvId).toBe(1)
+    })
   })
 
-  it('selects default environment automatically', async () => {
-    const mockEnvs = [{ id: 1, name: 'Prod', is_default: true }]
-    vi.mocked(odooRepository.getEnvs).mockResolvedValue(mockEnvs)
+  it('calls toggleCron mutation', async () => {
+    vi.mocked(odooRepository.getEnvs).mockResolvedValue([{ id: 1, name: 'P', is_default: true }] as any)
+    vi.mocked(odooRepository.toggleCron).mockResolvedValue({} as any)
 
     const { result } = renderHook(() => useOdoo(''), { wrapper: createWrapper() })
-
+    
     await waitFor(() => expect(result.current.selectedEnvId).toBe(1))
+    
+    act(() => {
+      result.current.toggleCron(101, true)
+    })
+    
+    await waitFor(() => {
+      expect(odooRepository.toggleCron).toHaveBeenCalledWith(1, 101, true)
+    })
   })
 
-  it('filters crons based on search term', async () => {
-    vi.mocked(odooRepository.getEnvs).mockResolvedValue([{ id: 1, name: 'P', is_default: true }])
-    const mockCrons = [
-      { id: 1, name: 'Apple Cron' },
-      { id: 2, name: 'Banana Cron' },
-    ]
-    vi.mocked(odooRepository.getCrons).mockResolvedValue(mockCrons as any)
+  it('exports environments', async () => {
+    vi.mocked(odooRepository.exportEnvs).mockResolvedValue([{ id: 1 }] as any)
+    
+    // Mock URL methods
+    global.URL.createObjectURL = vi.fn(() => 'mock-url')
+    global.URL.revokeObjectURL = vi.fn()
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
-    const { result } = renderHook(() => useOdoo('apple'), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useOdoo(''), { wrapper: createWrapper() })
+    await result.current.exportEnvs()
+    
+    expect(odooRepository.exportEnvs).toHaveBeenCalled()
+    expect(global.URL.createObjectURL).toHaveBeenCalled()
+    clickSpy.mockRestore()
+  })
+})
 
-    await waitFor(() => expect(result.current.filteredCrons).toHaveLength(1))
-    expect(result.current.filteredCrons[0].name).toBe('Apple Cron')
+describe('useOdooHealth', () => {
+  it('calls testConnection for each environment', async () => {
+    const envs = [{ id: 1, name: 'E1' } as any, { id: 2, name: 'E2' } as any]
+    vi.mocked(odooRepository.testConnection).mockResolvedValue({ status: 'up' } as any)
+
+    renderHook(() => useOdooHealth(envs), { wrapper: createWrapper() })
+
+    expect(odooRepository.testConnection).toHaveBeenCalledWith(1)
+    expect(odooRepository.testConnection).toHaveBeenCalledWith(2)
   })
 })

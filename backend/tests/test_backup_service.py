@@ -70,3 +70,28 @@ async def test_restore_local_backup(backup_service):
         mock_disconnect.assert_called_once()
         mock_copy.assert_called_once()
         mock_connect.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_delete_local_backup(backup_service):
+    with patch("os.path.exists", return_value=True), \
+         patch("os.remove") as mock_remove:
+        await backup_service.delete_local_backup("t.db")
+        mock_remove.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_list_s3_backups(backup_service, mock_repo, mock_storage):
+    mock_repo.get_s3_config_by_id.return_value = MagicMock(id=1)
+    mock_storage.list_backups.return_value = [{"key": "b1.db"}]
+    
+    result = await backup_service.list_s3_backups(1)
+    assert len(result) == 1
+    assert result[0]["key"] == "b1.db"
+
+@pytest.mark.asyncio
+async def test_delete_s3_backup(backup_service, mock_repo, mock_storage):
+    mock_repo.get_s3_config_by_id.return_value = MagicMock(id=1)
+    mock_storage.delete_backup.return_value = "Deleted"
+    
+    result = await backup_service.delete_s3_backup(1, "key")
+    assert result == "Deleted"
+    mock_storage.delete_backup.assert_called_once()

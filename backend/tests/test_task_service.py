@@ -137,3 +137,48 @@ async def test_get_dependency_graph(task_service, mock_repo):
     graph = await task_service.get_dependency_graph()
     assert "Task 1" in graph
     assert "depends on: 2" in graph
+
+@pytest.mark.asyncio
+async def test_delete_task(task_service, mock_repo):
+    await task_service.delete_task(1)
+    mock_repo.delete_task.assert_called_once_with(1)
+
+@pytest.mark.asyncio
+async def test_execute_task_ip(task_service, mock_repo, mock_external_api):
+    db_task = MagicMock(id=1, name="IP", task_type="ip", dependencies=None)
+    mock_repo.get_task_by_id.return_value = db_task
+    mock_external_api.get_ip.return_value = "1.1.1.1"
+    mock_repo.create_task_history.return_value = MagicMock()
+    mock_repo.get_webhooks.return_value = []
+    mock_repo.get_notification_configs.return_value = []
+    
+    result = await task_service.execute_task(1)
+    assert result == "1.1.1.1"
+
+@pytest.mark.asyncio
+async def test_execute_task_notification(task_service, mock_repo, mock_notification):
+    db_task = MagicMock(id=1, name="Notify", task_type="notification", dependencies=None, description="Msg")
+    mock_repo.get_task_by_id.return_value = db_task
+    mock_repo.get_notification_configs.return_value = [MagicMock()]
+    mock_repo.create_task_history.return_value = MagicMock()
+    mock_repo.get_webhooks.return_value = []
+    
+    await task_service.execute_task(1)
+    mock_notification.send_notification.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_get_attachments(task_service, mock_repo):
+    mock_repo.get_file_attachments.return_value = []
+    result = await task_service.get_attachments(1)
+    assert result == []
+    mock_repo.get_file_attachments.assert_called_once_with(1)
+
+@pytest.mark.asyncio
+async def test_get_attachment_url(task_service, mock_repo, mock_storage):
+    att = MagicMock(key="k", bucket="b")
+    mock_repo.get_attachment_by_id.return_value = att
+    mock_repo.get_s3_configs.return_value = [MagicMock(bucket="b")]
+    mock_storage.get_signed_url.return_value = "http://url"
+    
+    url = await task_service.get_attachment_url(1)
+    assert url == "http://url"

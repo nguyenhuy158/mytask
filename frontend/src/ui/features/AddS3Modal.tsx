@@ -74,10 +74,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+              <label htmlFor="s3-name" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Display Name
               </label>
               <input
+                id="s3-name"
                 autoFocus
                 required
                 className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"
@@ -87,10 +88,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+              <label htmlFor="s3-endpoint" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Endpoint URL
               </label>
               <input
+                id="s3-endpoint"
                 required
                 className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"
                 value={formData.endpoint}
@@ -100,10 +102,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+                <label htmlFor="s3-bucket" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                   Bucket Name
                 </label>
                 <input
+                  id="s3-bucket"
                   required
                   className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"
                   value={formData.bucket}
@@ -111,10 +114,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+                <label htmlFor="s3-region" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                   Region
                 </label>
                 <input
+                  id="s3-region"
                   required
                   className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"
                   value={formData.region}
@@ -123,10 +127,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+              <label htmlFor="s3-access-key" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Access Key
               </label>
               <input
+                id="s3-access-key"
                 required
                 type="password"
                 className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"
@@ -135,10 +140,11 @@ export const AddS3Modal = ({ onClose, onAdd }: AddS3ModalProps) => {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
+              <label htmlFor="s3-secret-key" className="block text-[10px] font-bold uppercase mb-1.5 opacity-50">
                 Secret Key
               </label>
               <input
+                id="s3-secret-key"
                 required
                 type="password"
                 className="w-full bg-surface-soft border border-hairline px-4 py-2 text-xs outline-none focus:border-ink transition-all font-bold"

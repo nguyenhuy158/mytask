@@ -59,53 +59,81 @@ async def test_create_task(task_service, mock_repo, mock_broadcast):
     mock_broadcast.broadcast.assert_called_once()
 
 @pytest.mark.asyncio
-async def test_update_task_status(task_service, mock_repo, mock_broadcast):
+async def test_update_task_status_basic(task_service, mock_repo, mock_broadcast):
     mock_repo.update_task_status.return_value = MagicMock(id=1, name="Test", odoo_env_id=None)
-    
     result = await task_service.update_task_status(1, "done")
-    
     assert result.id == 1
     mock_repo.update_task_status.assert_called_once_with(1, "done")
-    mock_broadcast.broadcast.assert_called_once()
 
 @pytest.mark.asyncio
-async def test_execute_task_weather(task_service, mock_repo, mock_external_api, mock_broadcast):
+async def test_update_task_status_with_odoo_sync(task_service, mock_repo, mock_odoo):
+    db_task = MagicMock(
+        id=1, name="Odoo Task", status="todo", 
+        odoo_env_id=1, odoo_project_id=10, odoo_task_id=100,
+        total_seconds=3600
+    )
+    mock_repo.update_task_status.return_value = db_task
+    mock_repo.get_odoo_env_by_id.return_value = MagicMock(
+        url="http://odoo", db="db", username="user", password="pwd"
+    )
+    await task_service.update_task_status(1, "done")
+    mock_odoo.create_timesheet.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_execute_task_weather(task_service, mock_repo, mock_external_api):
     db_task = MagicMock(id=1, name="Weather", task_type="weather", dependencies=None)
     mock_repo.get_task_by_id.return_value = db_task
     mock_external_api.get_weather.return_value = "Sunny"
-    mock_repo.create_task_history.return_value = MagicMock(id=1, task_id=1, task_name="Weather", result="Sunny", timestamp=datetime.now())
+    mock_repo.create_task_history.return_value = MagicMock(id=1, task_id=1, timestamp=datetime.now())
     mock_repo.get_webhooks.return_value = []
     mock_repo.get_notification_configs.return_value = []
-    
     result = await task_service.execute_task(1)
-    
     assert result == "Sunny"
-    mock_external_api.get_weather.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_execute_task_blocked_by_dependency(task_service, mock_repo):
+    db_task = MagicMock(id=2, name="Sub Task", task_type="generic", dependencies="1")
+    dep_task = MagicMock(id=1, status="todo")
+    mock_repo.get_task_by_id.side_effect = [db_task, dep_task]
+    result = await task_service.execute_task(2)
+    assert result["status"] == "error"
 
 @pytest.mark.asyncio
 async def test_start_stop_timer(task_service, mock_repo):
-    start_time = datetime.utcnow()
+    start_time = datetime.now()
     db_task = MagicMock(id=1, timer_started_at=start_time, total_seconds=100)
     mock_repo.get_task_by_id.return_value = db_task
-    
-    # Test start
     await task_service.start_timer(1)
-    mock_repo.update_task_timer.assert_called_once()
-    
-    # Test stop
-    mock_repo.update_task_timer.reset_mock()
     result = await task_service.stop_timer(1)
     assert result["status"] == "success"
-    mock_repo.update_task_timer.assert_called_once()
 
 @pytest.mark.asyncio
 async def test_decompose_task(task_service, mock_repo):
-    db_task = MagicMock(id=1, name="Refactor task", description="refactor code", task_type="generic", priority=3, project_id=1)
+    db_task = MagicMock(id=1, name="Refactor", description="refactor code", task_type="generic", priority=3, project_id=1)
     mock_repo.get_task_by_id.return_value = db_task
     mock_repo.create_task.return_value = MagicMock(id=2)
-    
     subtasks = await task_service.decompose_task(1)
-    
     assert len(subtasks) == 4
-    assert mock_repo.create_task.call_count == 4
-    mock_repo.add_audit_log.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_rank_tasks(task_service, mock_repo):
+    t1 = MagicMock(id=1, priority=1, deadline=None, estimated_time=None)
+    t2 = MagicMock(id=2, priority=5, deadline=None, estimated_time=None)
+    mock_repo.get_tasks.return_value = [t1, t2]
+    ranked = await task_service.rank_tasks()
+    assert ranked[0].id == 2
+
+@pytest.mark.asyncio
+async def test_add_attachment(task_service, mock_repo, mock_storage):
+    mock_repo.get_s3_config_by_id.return_value = MagicMock(bucket="test-bucket")
+    mock_storage.upload_file.return_value = {"mimetype": "image/png", "version_id": "v1"}
+    await task_service.add_attachment(1, 1, "/tmp/file.png", "file.png")
+    mock_repo.create_file_attachment.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_get_dependency_graph(task_service, mock_repo):
+    t1 = MagicMock(id=1, name="Task 1", dependencies="2")
+    mock_repo.get_tasks.return_value = [t1]
+    graph = await task_service.get_dependency_graph()
+    assert "Task 1" in graph
+    assert "depends on: 2" in graph

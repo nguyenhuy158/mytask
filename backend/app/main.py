@@ -36,6 +36,7 @@ task_service = TaskService(
     notification=http_adapter,
     broadcast=ws_adapter,
     odoo_port=odoo_adapter,
+    storage=s3_adapter,
 )
 backup_service = BackupService(repository=prisma_adapter, storage=s3_adapter)
 odoo_service = OdooService(repository=prisma_adapter, odoo_port=odoo_adapter)

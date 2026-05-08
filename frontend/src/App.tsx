@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { Download, Upload } from 'lucide-react'
 import { Sidebar } from './ui/layouts/Sidebar'
@@ -122,6 +122,7 @@ function App() {
     fetchTasks,
     fetchRankedTasks,
     addTask,
+    uploadAttachment,
   } = useTasks(searchTerm)
   const runTask = async (id: number) => {
     try {
@@ -190,6 +191,22 @@ function App() {
     testWebhook: testWebhookApi,
     addS3Config,
   } = useSystem()
+
+  const [notifications, setNotifications] = useState<
+    { id: number; name: string; type: string; webhook_url: string }[]
+  >([])
+  const fetchNotifications = useCallback(async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications`,
+    )
+    setNotifications(await res.json())
+  }, [])
+  useEffect(() => {
+    if (activeTab === 'config') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotifications()
+    }
+  }, [activeTab, fetchNotifications])
   useKeyboardNavigation(
     activeTab,
     handleSetActiveTab,
@@ -342,6 +359,22 @@ function App() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(
+                          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/weekly-summary`,
+                        )
+                        const data = await res.json()
+                        alert(`WEEKLY SUMMARY:\n\n${data.summary}`)
+                      } catch {
+                        toast.error('Failed to get AI summary')
+                      }
+                    }}
+                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
+                  >
+                    [AI_SUMMARY]
+                  </button>
+                  <button
                     onClick={fetchRankedTasks}
                     className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
                   >
@@ -374,6 +407,14 @@ function App() {
                 onDelete={deleteTask}
                 onRun={runTask}
                 onUpdateStatus={updateTaskStatus}
+                onUploadAttachment={async (taskId, file) => {
+                  const s3Config = s3Configs.find((c) => c.active) || s3Configs[0]
+                  if (!s3Config) {
+                    toast.error('No active S3 configuration found for upload')
+                    return
+                  }
+                  await uploadAttachment(taskId, s3Config.id, file)
+                }}
                 selectedIndex={selectedIndex}
               />
               <AuditLogTable logs={auditLogs} onRefresh={fetchAll} />
@@ -555,6 +596,59 @@ function App() {
                 </div>
                 <div className="space-y-4">
                   <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
+                    Error Alerts
+                  </h2>
+                  <div className="space-y-2">
+                    {notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className="flex items-center justify-between bg-surface-soft p-3 border border-hairline"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold px-2 py-0.5 bg-ink text-on-primary uppercase">
+                            {n.type}
+                          </span>
+                          <span className="text-xs font-bold">{n.name}</span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            await fetch(
+                              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications/${n.id}`,
+                              { method: 'DELETE' },
+                            )
+                            fetchNotifications()
+                          }}
+                          className="text-[10px] font-bold text-danger hover:underline"
+                        >
+                          [REMOVE]
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={async () => {
+                        const name = window.prompt('Name:')
+                        const type = window.prompt('Type (slack/telegram/webhook):')
+                        const url = window.prompt('Webhook URL:')
+                        if (name && type && url) {
+                          await fetch(
+                            `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications`,
+                            {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ name, type, webhook_url: url }),
+                            },
+                          )
+                          fetchNotifications()
+                        }
+                      }}
+                      className="w-full py-2 border border-dashed border-hairline text-[10px] font-bold text-mute hover:border-ink hover:text-ink transition-colors uppercase"
+                    >
+                      + Add Notification Target
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
                     Backup Policy
                   </h2>
                   <div className="flex items-center gap-4">
@@ -730,10 +824,34 @@ function App() {
             handleSetActiveTab(tab)
           }
         }}
-        onAction={(action) => {
+        onAction={async (action) => {
           if (action === 'new-task') setShowAddModal(true)
           if (action === 'rank') fetchRankedTasks()
           if (action === 'zen') setShowFocusMode(true)
+          if (action === 'ai-parse') {
+            const text = window.prompt(
+              'Enter your task in natural language (e.g., "Meeting tomorrow at 9am"):',
+            )
+            if (text) {
+              try {
+                const res = await fetch(
+                  `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/parse-task`,
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text }),
+                  },
+                )
+                const suggestedTask = await res.json()
+                // Open add modal with pre-filled data
+                // For now just show toast or we can enhance AddTaskModal to take initial data
+                toast.success(`AI suggested: ${suggestedTask.name}`)
+                setShowAddModal(true)
+              } catch {
+                toast.error('AI parsing failed')
+              }
+            }
+          }
         }}
       />
       <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">

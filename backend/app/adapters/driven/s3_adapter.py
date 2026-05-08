@@ -41,6 +41,49 @@ class S3Adapter(StoragePort):
             config=Config(signature_version="s3v4"),
         )
 
+    def upload_file(
+        self, config: Any, local_file_path: str, key: str
+    ) -> dict[str, Any]:
+        s3 = self._get_client(config)
+        s3.upload_file(local_file_path, config.bucket, key)
+        response = s3.head_object(Bucket=config.bucket, Key=key)
+        return {
+            "key": key,
+            "version_id": response.get("VersionId"),
+            "mimetype": response.get("ContentType"),
+        }
+
+    def get_signed_url(self, config: Any, key: str, expires_in: int = 3600) -> str:
+        s3 = self._get_client(config)
+        return s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": config.bucket, "Key": key},
+            ExpiresIn=expires_in,
+        )
+
+    def list_files(self, config: Any, prefix: str = "") -> list[Any]:
+        s3 = self._get_client(config)
+        response = s3.list_objects_v2(Bucket=config.bucket, Prefix=prefix)
+        if "Contents" not in response:
+            return []
+        return sorted(
+            [
+                {
+                    "key": obj["Key"],
+                    "size": obj["Size"],
+                    "last_modified": obj["LastModified"].isoformat(),
+                }
+                for obj in response["Contents"]
+            ],
+            key=lambda x: x["last_modified"],
+            reverse=True,
+        )
+
+    def delete_file(self, config: Any, key: str) -> str:
+        s3 = self._get_client(config)
+        s3.delete_object(Bucket=config.bucket, Key=key)
+        return f"Deleted {key}"
+
     def upload_backup(self, config: Any, local_file_path: str) -> str:
         s3 = self._get_client(config)
         file_name = os.path.basename(local_file_path)

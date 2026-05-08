@@ -1,6 +1,8 @@
 from typing import Any
 
 from ...core.entities.models import (
+    FileAttachmentSchema,
+    NotificationConfigSchema,
     OdooEnvSchema,
     S3ConfigSchema,
     TaskSchema,
@@ -142,3 +144,28 @@ class PrismaAdapter(RepositoryPort):
 
     async def delete_note(self, note_id: int) -> Any:
         return await db.note.delete(where={"id": note_id})
+
+    async def get_file_attachments(self, task_id: int) -> list[Any]:
+        return await db.fileattachment.find_many(
+            where={"task_id": task_id}, order={"timestamp": "desc"}
+        )
+
+    async def create_file_attachment(self, file: FileAttachmentSchema) -> Any:
+        return await db.fileattachment.create(data=file.dict())
+
+    async def get_attachment_by_id(self, file_id: int) -> Any | None:
+        return await db.fileattachment.find_unique(where={"id": file_id})
+
+    async def delete_file_attachment(self, file_id: int) -> Any:
+        return await db.fileattachment.delete(where={"id": file_id})
+
+    async def get_notification_configs(self, active_only: bool = False) -> list[Any]:
+        if active_only:
+            return await db.notificationconfig.find_many(where={"active": True})
+        return await db.notificationconfig.find_many()
+
+    async def create_notification_config(self, config: NotificationConfigSchema) -> Any:
+        return await db.notificationconfig.create(data=config.dict())
+
+    async def delete_notification_config(self, config_id: int) -> Any:
+        return await db.notificationconfig.delete(where={"id": config_id})

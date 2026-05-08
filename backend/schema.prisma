@@ -39,6 +39,27 @@ model TaskConfig {
   odoo_task_id     Int?
   history          TaskHistory[]
   notes            Note[]
+  attachments      FileAttachment[]
+}
+
+model FileAttachment {
+  id          Int        @id @default(autoincrement())
+  name        String
+  key         String
+  bucket      String
+  mimetype    String
+  version_id  String?
+  task_id     Int
+  task        TaskConfig @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  timestamp   DateTime   @default(now())
+}
+
+model NotificationConfig {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String   // slack, telegram, email
+  webhook_url String
+  active      Boolean  @default(true)
 }
 
 model Note {

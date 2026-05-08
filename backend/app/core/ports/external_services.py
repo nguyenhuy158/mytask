@@ -5,7 +5,11 @@ from typing import Any
 class NotificationPort(ABC):
     @abstractmethod
     async def send_notification(
-        self, webhooks: list[Any], task_name: str, result: Any
+        self,
+        targets: list[Any],
+        title: str,
+        message: str,
+        level: str = "info",  # info, success, warning, error
     ) -> None:
         pass
 
@@ -23,6 +27,24 @@ class ExternalApiPort(ABC):
 class StoragePort(ABC):
     @abstractmethod
     def backup_sqlite_db(self) -> str:
+        pass
+
+    @abstractmethod
+    def upload_file(
+        self, config: Any, local_file_path: str, key: str
+    ) -> dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def get_signed_url(self, config: Any, key: str, expires_in: int = 3600) -> str:
+        pass
+
+    @abstractmethod
+    def list_files(self, config: Any, prefix: str = "") -> list[Any]:
+        pass
+
+    @abstractmethod
+    def delete_file(self, config: Any, key: str) -> str:
         pass
 
     @abstractmethod

@@ -4,9 +4,11 @@ import os
 from fastapi import (
     APIRouter,
     Depends,
+    File,
     HTTPException,
     Request,
     Response,
+    UploadFile,
     WebSocket,
     WebSocketDisconnect,
 )
@@ -17,6 +19,7 @@ from slowapi.util import get_remote_address
 from ...core.constants import ResponseMessage
 from ...core.entities.models import (
     NoteSchema,
+    NotificationConfigSchema,
     OdooEnvSchema,
     S3ConfigSchema,
     TaskSchema,
@@ -568,3 +571,83 @@ async def delete_env(id: int, service: OdooService = Depends(get_odoo_service)):
 async def rpc_endpoint(request: Request):
     data = await request.body()
     return Response(content=handle_rpc_request(data), media_type="text/xml")
+
+
+# New Endpoints
+@router.post("/tasks/{task_id}/attachments")
+async def add_task_attachment(
+    task_id: int,
+    s3_config_id: int,
+    file: UploadFile = File(...),
+    service: TaskService = Depends(get_task_service),
+):
+    import shutil
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        tmp_path = tmp.name
+
+    try:
+        attachment = await service.add_attachment(
+            task_id, s3_config_id, tmp_path, file.filename
+        )
+        return attachment
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
+@router.get("/tasks/{task_id}/attachments")
+async def get_task_attachments(
+    task_id: int, service: TaskService = Depends(get_task_service)
+):
+    return await service.get_attachments(task_id)
+
+
+@router.get("/attachments/{attachment_id}/url")
+async def get_attachment_url(
+    attachment_id: int, service: TaskService = Depends(get_task_service)
+):
+    url = await service.get_attachment_url(attachment_id)
+    return {"url": url}
+
+
+@router.get("/notifications")
+async def get_notifications(repo=Depends(get_prisma_adapter)):
+    return await repo.get_notification_configs()
+
+
+@router.post("/notifications")
+async def create_notification(
+    config: NotificationConfigSchema, repo=Depends(get_prisma_adapter)
+):
+    return await repo.create_notification_config(config)
+
+
+@router.delete("/notifications/{id}")
+async def delete_notification(id: int, repo=Depends(get_prisma_adapter)):
+    await repo.delete_notification_config(id)
+    return {"status": "success"}
+
+
+# AI Endpoints (Placeholders for now)
+@router.post("/ai/parse-task")
+async def parse_task_ai(data: dict):
+    # This would call an LLM to parse text into TaskSchema
+    # For now, return a simple echo or basic logic
+    text = data.get("text", "")
+    return {
+        "name": f"AI Task: {text[:20]}...",
+        "description": text,
+        "cron_expression": "0 9 * * 1",  # Mocked
+        "priority": 2,
+    }
+
+
+@router.get("/ai/weekly-summary")
+async def get_weekly_summary(service: TaskService = Depends(get_task_service)):
+    # This would summarize audit logs for the last week
+    return {
+        "summary": "This week you completed 5 tasks, had 2 failures. Most active on Tuesday."
+    }

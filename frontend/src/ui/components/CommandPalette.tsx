@@ -26,6 +26,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
     { id: 'analytics', label: 'Go to Analytics', type: 'nav' },
     { id: 'shell', label: 'Odoo Remote Shell', type: 'nav' },
     { id: 'new-task', label: 'Create New Task', type: 'action' },
+    { id: 'ai-parse', label: 'AI Parse Natural Language', type: 'action' },
     { id: 'rank', label: 'AI Rank Tasks', type: 'action' },
     { id: 'zen', label: 'Enter Zen Mode', type: 'action' },
   ]

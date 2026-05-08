@@ -2,12 +2,13 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from ..entities.models import TaskSchema
+from ..entities.models import FileAttachmentSchema, TaskSchema
 from ..ports.external_services import (
     BroadcastPort,
     ExternalApiPort,
     NotificationPort,
     OdooPort,
+    StoragePort,
 )
 from ..ports.repository import RepositoryPort
 
@@ -22,12 +23,14 @@ class TaskService:
         notification: NotificationPort,
         broadcast: BroadcastPort,
         odoo_port: OdooPort,
+        storage: StoragePort,
     ):
         self.repository = repository
         self.external_api = external_api
         self.notification = notification
         self.broadcast = broadcast
         self.odoo_port = odoo_port
+        self.storage = storage
 
     async def list_tasks(self) -> list[Any]:
         return await self.repository.get_tasks()
@@ -89,53 +92,84 @@ class TaskService:
         if not db_task:
             logger.warning(f"Task not found for execution: {task_id}")
             return None
-        if db_task.dependencies:
-            logger.debug(
-                f"Checking dependencies for task {task_id}: {db_task.dependencies}"
-            )
-            dep_ids = [int(d) for d in db_task.dependencies.split(",") if d.strip()]
-            for dep_id in dep_ids:
-                dep_task = await self.repository.get_task_by_id(dep_id)
-                if dep_task and dep_task.status != "done":
-                    logger.info(f"Task {task_id} blocked by dependency {dep_id}")
-                    await self.broadcast.broadcast(
-                        {
-                            "type": "TASK_ERROR",
-                            "task_id": db_task.id,
-                            "message": f"Dependency TASK_{dep_id} is not DONE",
+
+        try:
+            if db_task.dependencies:
+                logger.debug(
+                    f"Checking dependencies for task {task_id}: {db_task.dependencies}"
+                )
+                dep_ids = [int(d) for d in db_task.dependencies.split(",") if d.strip()]
+                for dep_id in dep_ids:
+                    dep_task = await self.repository.get_task_by_id(dep_id)
+                    if dep_task and dep_task.status != "done":
+                        logger.info(f"Task {task_id} blocked by dependency {dep_id}")
+                        await self.broadcast.broadcast(
+                            {
+                                "type": "TASK_ERROR",
+                                "task_id": db_task.id,
+                                "message": f"Dependency TASK_{dep_id} is not DONE",
+                            }
+                        )
+                        return {
+                            "status": "error",
+                            "message": f"Dependency {dep_id} not done",
                         }
-                    )
-                    return {
-                        "status": "error",
-                        "message": f"Dependency {dep_id} not done",
-                    }
-        result = (
-            self.external_api.get_weather()
-            if db_task.task_type == "weather"
-            else self.external_api.get_ip()
-            if db_task.task_type == "ip"
-            else "Unsupported"
-        )
-        history = await self.repository.create_task_history(
-            db_task.id, db_task.name, str(result)
-        )
-        await self.broadcast.broadcast(
-            {
-                "type": "TASK_COMPLETED",
-                "task_id": db_task.id,
-                "result": result,
-                "history": {
-                    "id": history.id,
-                    "task_id": history.task_id,
-                    "task_name": history.task_name,
-                    "result": history.result,
-                    "timestamp": history.timestamp.isoformat(),
-                },
-            }
-        )
-        webhooks = await self.repository.get_webhooks(active_only=True)
-        await self.notification.send_notification(webhooks, db_task.name, result)
-        return result
+
+            result = (
+                self.external_api.get_weather()
+                if db_task.task_type == "weather"
+                else self.external_api.get_ip()
+                if db_task.task_type == "ip"
+                else "Unsupported"
+            )
+
+            history = await self.repository.create_task_history(
+                db_task.id, db_task.name, str(result)
+            )
+
+            await self.broadcast.broadcast(
+                {
+                    "type": "TASK_COMPLETED",
+                    "task_id": db_task.id,
+                    "result": result,
+                    "history": {
+                        "id": history.id,
+                        "task_id": history.task_id,
+                        "task_name": history.task_name,
+                        "result": history.result,
+                        "timestamp": history.timestamp.isoformat(),
+                    },
+                }
+            )
+
+            # Notifications
+            webhooks = await self.repository.get_webhooks(active_only=True)
+            notifs = await self.repository.get_notification_configs(active_only=True)
+            all_targets = webhooks + notifs
+            await self.notification.send_notification(
+                all_targets, f"Task Completed: {db_task.name}", str(result), "success"
+            )
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Task {task_id} failed: {str(e)}")
+            await self.repository.add_audit_log(
+                "TASK_EXECUTION_ERROR", f"Task {db_task.name} failed: {str(e)}"
+            )
+
+            # Error notification
+            webhooks = await self.repository.get_webhooks(active_only=True)
+            notifs = await self.repository.get_notification_configs(active_only=True)
+            all_targets = webhooks + notifs
+            await self.notification.send_notification(
+                all_targets, f"Task Failed: {db_task.name}", str(e), "error"
+            )
+
+            await self.broadcast.broadcast(
+                {"type": "TASK_ERROR", "task_id": task_id, "message": str(e)}
+            )
+            return {"status": "error", "message": str(e)}
 
     async def start_timer(self, task_id: int) -> Any:
         return await self.repository.update_task_timer(
@@ -260,3 +294,39 @@ class TaskService:
                 for dep_id in deps:
                     graph += f" └── depends on: {dep_id}\n"
         return graph
+
+    async def add_attachment(
+        self, task_id: int, s3_config_id: int, file_path: str, filename: str
+    ) -> Any:
+        config = await self.repository.get_s3_config_by_id(s3_config_id)
+        if not config:
+            raise ValueError("S3 Config not found")
+
+        key = f"tasks/{task_id}/{filename}"
+        result = self.storage.upload_file(config, file_path, key)
+
+        attachment = FileAttachmentSchema(
+            name=filename,
+            key=key,
+            bucket=config.bucket,
+            mimetype=result["mimetype"] or "application/octet-stream",
+            version_id=result["version_id"],
+            task_id=task_id,
+        )
+        return await self.repository.create_file_attachment(attachment)
+
+    async def get_attachments(self, task_id: int) -> list[Any]:
+        return await self.repository.get_file_attachments(task_id)
+
+    async def get_attachment_url(self, attachment_id: int) -> str:
+        attachment = await self.repository.get_attachment_by_id(attachment_id)
+        if not attachment:
+            raise ValueError("Attachment not found")
+
+        # Find the S3 config for this bucket
+        s3_configs = await self.repository.get_s3_configs()
+        config = next((c for c in s3_configs if c.bucket == attachment.bucket), None)
+        if not config:
+            raise ValueError("S3 Config for bucket not found")
+
+        return self.storage.get_signed_url(config, attachment.key)

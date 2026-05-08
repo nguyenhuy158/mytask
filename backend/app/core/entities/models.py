@@ -56,3 +56,19 @@ class WebhookConfigSchema(BaseModel):
     secret: str | None = None
     target: str | None = None
     active: int | None = 1
+
+
+class FileAttachmentSchema(BaseModel):
+    name: str
+    key: str
+    bucket: str
+    mimetype: str
+    version_id: str | None = None
+    task_id: int
+
+
+class NotificationConfigSchema(BaseModel):
+    name: str
+    type: str  # slack, telegram, email
+    webhook_url: str
+    active: bool | None = True

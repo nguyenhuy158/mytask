@@ -75,6 +75,45 @@ export const useTasks = (searchTerm: string) => {
       setLoading(false)
     }
   }, [])
+
+  const fetchAttachments = useCallback(async (taskId: number) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/tasks/${taskId}/attachments`,
+      )
+      return await res.json()
+    } catch {
+      toast.error('Failed to fetch attachments')
+      return []
+    }
+  }, [])
+
+  const uploadAttachment = useCallback(async (taskId: number, s3ConfigId: number, file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/tasks/${taskId}/attachments?s3_config_id=${s3ConfigId}`,
+        {
+          method: 'POST',
+          body: formData,
+        },
+      )
+      if (!res.ok) throw new Error('Upload failed')
+      const attachment = await res.json()
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, attachments: [...(t.attachments || []), attachment] } : t,
+        ),
+      )
+      toast.success('File uploaded')
+      return attachment
+    } catch {
+      toast.error('Failed to upload file')
+    }
+  }, [])
+
   useEffect(() => {
     const init = async () => {
       await fetchTasks()
@@ -92,6 +131,8 @@ export const useTasks = (searchTerm: string) => {
     deleteTask,
     updateTaskStatus,
     runTask,
+    fetchAttachments,
+    uploadAttachment,
     loading,
   }
 }

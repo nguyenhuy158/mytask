@@ -8,3 +8,4 @@ slowapi
 prisma
 ruff
 boto3
+python-multipart

@@ -12,6 +12,7 @@ interface DashboardProps {
   onDelete: (id: number) => void
   onRun: (id: number) => void
   onUpdateStatus: (id: number, status: string) => void
+  onUploadAttachment?: (taskId: number, file: File) => Promise<void>
   selectedIndex?: number
 }
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -21,6 +22,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onDelete,
   onRun,
   onUpdateStatus,
+  onUploadAttachment,
   selectedIndex = -1,
 }) => {
   if (viewMode === 'calendar') {
@@ -36,6 +38,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             result={results[task.id]}
             onDelete={onDelete}
             onRun={onRun}
+            onUpload={onUploadAttachment ? (file) => onUploadAttachment(task.id, file) : undefined}
             selected={idx === selectedIndex}
           />
         ))}

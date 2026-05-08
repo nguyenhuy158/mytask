@@ -17,8 +17,9 @@ async def test_task_service_create_task():
     broadcast = MagicMock()
     broadcast.broadcast = AsyncMock()
     odoo = MagicMock()
+    storage = MagicMock()
 
-    service = TaskService(repo, api, notif, broadcast, odoo)
+    service = TaskService(repo, api, notif, broadcast, odoo, storage)
     task = TaskSchema(name="Mock Task", description="Desc", task_type="generic")
 
     result = await service.create_task(task)

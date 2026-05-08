@@ -1,25 +1,54 @@
-import React from 'react'
-import type { Task } from '../../domain/models/Task'
+import React, { useState } from 'react'
+import { Paperclip, Eye } from 'lucide-react'
+import type { Task, FileAttachment } from '../../domain/models/Task'
 import { Card, CardHeader, CardBody, CardFooter } from '../components/Card'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { Typography } from '../components/Typography'
+import { FilePreview } from '../components/FilePreview'
+
 interface TaskCardProps {
   task: Task
   result?: { text: string; time: string }
   onDelete: (id: number) => void
   onRun: (id: number) => void
+  onUpload?: (file: File) => Promise<void>
   selected?: boolean
 }
+
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   result,
   onDelete,
   onRun,
+  onUpload,
   selected = false,
 }) => {
+  const [previewFile, setPreviewFile] = useState<FileAttachment | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && onUpload) {
+      setIsUploading(true)
+      try {
+        await onUpload(file)
+      } finally {
+        setIsUploading(false)
+      }
+    }
+  }
+
   return (
     <Card hoverable className={selected ? 'border-primary ring-1 ring-primary' : ''}>
+      {previewFile && (
+        <FilePreview
+          attachmentId={previewFile.id}
+          filename={previewFile.name}
+          mimetype={previewFile.mimetype}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
       <CardHeader>
         <div className="flex flex-wrap gap-2">
           <Badge>{task.task_type}</Badge>
@@ -74,6 +103,49 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </Typography>
           </div>
         )}
+
+        <div className="mt-4 pt-4 border-t border-hairline">
+          <div className="flex items-center justify-between mb-2">
+            <Typography variant="label" className="flex items-center gap-1">
+              <Paperclip size={10} /> Attachments
+            </Typography>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={isUploading}
+              />
+              <Typography
+                variant="code"
+                className={`text-accent hover:underline ${isUploading ? 'animate-pulse' : ''}`}
+              >
+                {isUploading ? '[UPLOADING...]' : '[UPLOAD]'}
+              </Typography>
+            </label>
+          </div>
+
+          <div className="space-y-1">
+            {task.attachments?.map((file) => (
+              <div key={file.id} className="flex items-center justify-between group/file">
+                <Typography variant="code" className="text-[10px] truncate max-w-[150px] text-mute">
+                  {file.name}
+                </Typography>
+                <button
+                  onClick={() => setPreviewFile(file)}
+                  className="opacity-0 group-hover/file:opacity-100 transition-opacity"
+                >
+                  <Eye size={12} className="text-ink hover:text-primary" />
+                </button>
+              </div>
+            ))}
+            {(!task.attachments || task.attachments.length === 0) && (
+              <Typography variant="caption" className="italic opacity-30 text-[10px]">
+                No files attached
+              </Typography>
+            )}
+          </div>
+        </div>
       </CardBody>
       <CardFooter>
         <div className="flex items-center justify-between">

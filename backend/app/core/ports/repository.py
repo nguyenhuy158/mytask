@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ..entities.models import (
+    FileAttachmentSchema,
+    NotificationConfigSchema,
     OdooEnvSchema,
     S3ConfigSchema,
     TaskSchema,
@@ -145,4 +147,32 @@ class RepositoryPort(ABC):
 
     @abstractmethod
     async def delete_note(self, note_id: int) -> Any:
+        pass
+
+    @abstractmethod
+    async def get_file_attachments(self, task_id: int) -> list[Any]:
+        pass
+
+    @abstractmethod
+    async def create_file_attachment(self, file: FileAttachmentSchema) -> Any:
+        pass
+
+    @abstractmethod
+    async def get_attachment_by_id(self, file_id: int) -> Any | None:
+        pass
+
+    @abstractmethod
+    async def delete_file_attachment(self, file_id: int) -> Any:
+        pass
+
+    @abstractmethod
+    async def get_notification_configs(self, active_only: bool = False) -> list[Any]:
+        pass
+
+    @abstractmethod
+    async def create_notification_config(self, config: NotificationConfigSchema) -> Any:
+        pass
+
+    @abstractmethod
+    async def delete_notification_config(self, config_id: int) -> Any:
         pass

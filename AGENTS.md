@@ -6,6 +6,7 @@
 
 ## Critical Constraints
 - **NO COMMENTS:** Never add `#` or `//` explanations. Code must be self-documenting.
+- **NO ALERTS:** Never use `alert()` or `confirm()`. Use `toast` (react-hot-toast) for notifications.
 - **TYPOGRAPHY:** Berkeley Mono ONLY. No sans-serif or serif fonts allowed anywhere.
 - **AESTHETIC:** Follow `design.md` strictly. High-contrast, cream/ink, monospace, 4px corners.
 

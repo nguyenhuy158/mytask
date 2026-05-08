@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
 import { Paperclip, Eye } from 'lucide-react'
 import type { Task, FileAttachment } from '../../domain/models/Task'
 import { Card, CardHeader, CardBody, CardFooter } from '../components/Card'
@@ -185,7 +186,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 { method: 'POST' },
               )
               const data = await res.json()
-              if (data.status === 'success') alert(`Branch created: ${data.branch}`)
+              if (data.status === 'success') toast.success(`Branch created: ${data.branch}`)
             }}
             className="hover:bg-ink hover:text-on-primary"
           >

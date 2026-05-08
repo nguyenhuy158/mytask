@@ -365,7 +365,22 @@ function App() {
                           `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/weekly-summary`,
                         )
                         const data = await res.json()
-                        alert(`WEEKLY SUMMARY:\n\n${data.summary}`)
+                        toast(
+                          () => (
+                            <div className="flex flex-col">
+                              <span className="font-bold border-b border-hairline mb-1 pb-1 uppercase text-[10px]">
+                                Weekly Summary
+                              </span>
+                              <span className="text-[11px] whitespace-pre-wrap">
+                                {data.summary}
+                              </span>
+                            </div>
+                          ),
+                          {
+                            icon: '📊',
+                            duration: 6000,
+                          },
+                        )
                       } catch {
                         toast.error('Failed to get AI summary')
                       }

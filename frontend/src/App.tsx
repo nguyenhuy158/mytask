@@ -627,7 +627,15 @@ function App() {
 
           {activeTab === 'backups' && (
             <div className="space-y-8">
-              <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Backups</h1>
+              <div className="flex items-end justify-between border-b border-ink pb-4">
+                <h1 className="text-2xl font-bold uppercase">Backups</h1>
+                <button
+                  onClick={triggerBackup}
+                  className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
+                >
+                  [BACKUP_NOW]
+                </button>
+              </div>
               <div className="grid grid-cols-1 gap-4">
                 {backups.map((backup) => (
                   <div

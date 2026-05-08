@@ -41,7 +41,7 @@
   --border: 20 6% 90%;
   --input: 20 6% 90%;
   --ring: 20 6% 12%;
-  --radius: 0.5rem;
+  --radius: 4px;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

@@ -10,6 +10,7 @@ import {
 } from '../components/Table'
 import { Typography } from '../components/Typography'
 import { Badge } from '../components/Badge'
+import { Spinner } from '../components/Spinner'
 
 interface DisbursementReportProps {
   report: IDisbursementReport[]
@@ -19,10 +20,8 @@ interface DisbursementReportProps {
 export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, loading }) => {
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Typography variant="label" className="animate-pulse">
-          FETCHING_REPORT_DATA...
-        </Typography>
+      <div className="flex flex-col items-center justify-center py-24">
+        <Spinner label="FETCHING_REPORT_DATA..." />
       </div>
     )
   }

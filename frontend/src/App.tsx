@@ -134,6 +134,7 @@ function App() {
 
   const {
     envs,
+    report: odooReportData,
     selectedEnvId,
     setSelectedEnvId,
     loading: odooLoading,

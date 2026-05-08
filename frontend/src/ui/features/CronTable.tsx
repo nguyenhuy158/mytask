@@ -9,7 +9,7 @@ import {
   TableCell,
 } from '../components/Table'
 import { Button } from '../components/Button'
-import { Typography } from '../components/Typography'
+import { Spinner } from '../components/Spinner'
 
 interface CronTableProps {
   crons: Cron[]
@@ -37,10 +37,8 @@ export const CronTable: React.FC<CronTableProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Typography variant="label" className="animate-pulse">
-          CONNECTING_TO_RPC...
-        </Typography>
+      <div className="flex flex-col items-center justify-center py-24">
+        <Spinner label="CONNECTING_TO_RPC..." />
       </div>
     )
   }

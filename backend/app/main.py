@@ -40,33 +40,24 @@ from .core.services.task_service import TaskService
 from .database import connect_db, disconnect_db
 from .rpc import handle_rpc_request
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
-# Initialize Adapters
-prisma_adapter = PrismaAdapter()
-http_adapter = HttpAdapter()
-odoo_adapter = OdooAdapter()
-s3_adapter = S3Adapter()
-ws_adapter = WebSocketAdapter()
-
-# Initialize Services
-task_service = TaskService(
-    repository=prisma_adapter,
-    external_api=http_adapter,
-    notification=http_adapter,
-    broadcast=ws_adapter,
-    odoo_port=odoo_adapter,
-)
-backup_service = BackupService(repository=prisma_adapter, storage=s3_adapter)
-odoo_service = OdooService(repository=prisma_adapter, odoo_port=odoo_adapter)
-
-# Scheduler
-scheduler = SchedulerAdapter(task_service=task_service, backup_service=backup_service)
-
-# FastAPI Setup
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.debug(f"Request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.debug(f"Response: {response.status_code}")
+    return response
+
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -77,8 +68,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+prisma_adapter = PrismaAdapter()
+http_adapter = HttpAdapter()
+odoo_adapter = OdooAdapter()
+s3_adapter = S3Adapter()
+ws_adapter = WebSocketAdapter()
 
-# Dependencies
+task_service = TaskService(
+    repository=prisma_adapter,
+    external_api=http_adapter,
+    notification=http_adapter,
+    broadcast=ws_adapter,
+    odoo_port=odoo_adapter,
+)
+backup_service = BackupService(repository=prisma_adapter, storage=s3_adapter)
+odoo_service = OdooService(repository=prisma_adapter, odoo_port=odoo_adapter)
+
+scheduler = SchedulerAdapter(task_service=task_service, backup_service=backup_service)
+
+
 def get_task_service():
     return task_service
 
@@ -91,7 +99,6 @@ def get_odoo_service():
     return odoo_service
 
 
-# WebSocket Endpoint
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await ws_adapter.connect(websocket)
@@ -102,17 +109,14 @@ async def websocket_endpoint(websocket: WebSocket):
         ws_adapter.disconnect(websocket)
 
 
-# Lifespan / Events
 @app.on_event("startup")
 async def startup_event():
     await connect_db()
     scheduler.start()
 
-    # Schedule backup job
     cron_expr = await backup_service.get_backup_cron()
     scheduler.schedule_backup(cron_expr)
 
-    # Schedule all tasks
     tasks = await prisma_adapter.get_tasks_with_cron()
     for t in tasks:
         scheduler.schedule_task(t.id, t.cron_expression, t.name)
@@ -128,7 +132,6 @@ async def shutdown_event():
     await disconnect_db()
 
 
-# API Endpoints
 @app.get("/tasks")
 async def list_tasks(service: TaskService = Depends(get_task_service)):
     return await service.list_tasks()
@@ -270,7 +273,6 @@ async def manual_backup(
     }
 
 
-# S3 Endpoints
 @app.get("/s3-configs")
 async def get_s3_configs():
     return await prisma_adapter.get_s3_configs()

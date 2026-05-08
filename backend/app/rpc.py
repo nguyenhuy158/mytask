@@ -87,4 +87,7 @@ dispatcher.register_function(get_history_rpc, "tasks.history")
 
 
 def handle_rpc_request(data):
-    return dispatcher._marshaled_dispatch(data)
+    logger.debug(f"RPC Request: {data[:200]}...")
+    response = dispatcher._marshaled_dispatch(data)
+    logger.debug(f"RPC Response: {response[:200]}...")
+    return response

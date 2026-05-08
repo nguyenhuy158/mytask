@@ -41,6 +41,7 @@ class TaskService:
         return db_task
 
     async def update_task_status(self, task_id: int, status: str) -> Any:
+        logger.debug(f"Updating task {task_id} status to: {status}")
         db_task = await self.repository.update_task_status(task_id, status)
 
         if status == "done" and db_task.odoo_env_id and db_task.odoo_project_id:
@@ -85,16 +86,22 @@ class TaskService:
         return db_task
 
     async def execute_task(self, task_id: int) -> Any:
+        logger.info(f"Executing task: {task_id}")
         db_task = await self.repository.get_task_by_id(task_id)
         if not db_task:
+            logger.warning(f"Task not found for execution: {task_id}")
             return None
 
         # Dependency Check
         if db_task.dependencies:
+            logger.debug(
+                f"Checking dependencies for task {task_id}: {db_task.dependencies}"
+            )
             dep_ids = [int(d) for d in db_task.dependencies.split(",") if d.strip()]
             for dep_id in dep_ids:
                 dep_task = await self.repository.get_task_by_id(dep_id)
                 if dep_task and dep_task.status != "done":
+                    logger.info(f"Task {task_id} blocked by dependency {dep_id}")
                     await self.broadcast.broadcast(
                         {
                             "type": "TASK_ERROR",

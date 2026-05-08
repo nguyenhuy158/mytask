@@ -1,12 +1,47 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
+import { promptAction } from '@/lib/toast-confirm'
 import { useTasks } from './ui/hooks/useTasks'
-
 import { useOdoo } from './ui/hooks/useOdoo'
 import { useSystem } from './ui/hooks/useSystem'
 import { useKeyboardNavigation } from './ui/hooks/useKeyboardNavigation'
 import { wsAdapter } from './adapters/websocket/NativeWsAdapter'
 import type { TaskHistory } from './domain/models/System'
+import type { OdooEnv } from './domain/models/OdooEnv'
+
+// Layouts
+import { Sidebar } from './ui/layouts/Sidebar'
+import { Header } from './ui/layouts/Header'
+
+// Features
+import { Dashboard } from './ui/features/Dashboard'
+import { AuditLogTable } from './ui/features/AuditLogTable'
+import { HistoryTable } from './ui/features/HistoryTable'
+import { CronTable } from './ui/features/CronTable'
+import { OdooShell } from './ui/features/OdooShell'
+import { DisbursementReport } from './ui/features/DisbursementReport'
+import { EnvCard } from './ui/features/EnvCard'
+import { WebhookCard } from './ui/features/WebhookCard'
+import { Wiki } from './ui/features/Wiki'
+import { S3Explorer } from './ui/features/S3Explorer'
+import { AsciiDashboard } from './ui/features/AsciiDashboard'
+import { FocusMode } from './ui/features/FocusMode'
+import { AddTaskModal } from './ui/features/AddTaskModal'
+import { AddWebhookModal } from './ui/features/AddWebhookModal'
+import { AddEnvModal } from './ui/features/AddEnvModal'
+import { EditEnvModal } from './ui/features/EditEnvModal'
+import { AddS3Modal } from './ui/features/AddS3Modal'
+import { PomodoroTimer } from './ui/features/PomodoroTimer'
+import { LogStream } from './ui/features/LogStream'
+
+// Components
+import { Select } from './ui/components/Select'
+import { CronBuilder } from './ui/components/CronBuilder'
+import { CommandPalette } from './ui/components/CommandPalette'
+import { Draggable } from './ui/components/Draggable'
+
+// Icons
+import { Download, Upload } from 'lucide-react'
 type TabName =
   | 'tasks'
   | 'envs'

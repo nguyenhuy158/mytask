@@ -6,7 +6,7 @@ import { Skeleton } from '../components/Skeleton'
 export const S3Explorer = () => {
   const [configs, setConfigs] = useState<S3Config[]>([])
   const [selectedConfigId, setSelectedConfigId] = useState<number | null>(null)
-  const [files, setFiles] = useState<{ Key: string; Size: number; LastModified: string }[]>([])
+  const [files, setFiles] = useState<{ key: string; size: number; last_modified: string }[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
 
@@ -134,13 +134,13 @@ export const S3Explorer = () => {
           {!loading &&
             files.map((f) => (
               <div
-                key={f.Key}
+                key={f.key}
                 className="p-4 flex items-center justify-between group hover:bg-surface-soft transition-colors cursor-default"
               >
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold">{f.Key}</span>
+                  <span className="text-xs font-bold">{f.key}</span>
                   <span className="text-[10px] text-mute">
-                    {(f.Size / 1024).toFixed(2)} KB | {new Date(f.LastModified).toLocaleString()}
+                    {(f.size / 1024).toFixed(2)} KB | {new Date(f.last_modified).toLocaleString()}
                   </span>
                 </div>
                 <button className="opacity-0 group-hover:opacity-100 text-[10px] font-bold border border-ink px-2 py-1 hover:bg-ink hover:text-canvas">

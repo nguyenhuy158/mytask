@@ -159,4 +159,4 @@ class OdooAdapter(OdooPort):
             return records
         except Exception as e:
             print(f"Error fetching disbursement report: {e}")
-            return []
+            raise e

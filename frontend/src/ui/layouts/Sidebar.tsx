@@ -8,6 +8,7 @@ interface SidebarProps {
   darkMode: boolean
   setDarkMode: (dark: boolean) => void
   position: 'left' | 'right' | 'top' | 'bottom'
+  setPosition: (pos: 'left' | 'right' | 'top' | 'bottom') => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -17,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   darkMode,
   setDarkMode,
   position,
+  setPosition,
 }) => {
   const { t, i18n } = useTranslation()
 
@@ -100,6 +102,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className={`flex ${isVertical ? 'mt-4 flex-col gap-4' : 'flex-row gap-6'}`}>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-ash font-bold uppercase tracking-widest text-[9px]">Pos</span>
+            <div className="flex gap-2">
+              {(['left', 'right', 'top', 'bottom'] as const).map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => {
+                    setPosition(pos)
+                    localStorage.setItem('sidebarPosition', pos)
+                  }}
+                  className={`${
+                    position === pos ? 'text-ink font-bold' : 'text-ash hover:text-ink'
+                  } transition-colors uppercase text-[10px]`}
+                >
+                  {position === pos ? `[${pos[0]}]` : pos[0]}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-ash font-bold uppercase tracking-widest text-[9px]">Lang</span>
             <button

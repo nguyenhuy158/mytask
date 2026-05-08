@@ -97,6 +97,17 @@ export const CronTable: React.FC<CronTableProps> = ({
             </TableCell>
           </TableRow>
         ))}
+        {crons.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center py-12">
+              <div className="flex flex-col items-center gap-2 text-mute">
+                <span className="text-[10px] font-bold uppercase tracking-widest">
+                  NO_CRONS_FOUND_OR_CONNECTION_FAILED
+                </span>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   )

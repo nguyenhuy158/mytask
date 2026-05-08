@@ -31,27 +31,31 @@ export const useOdoo = (searchTerm: string) => {
     }
   }, [selectedEnvId])
 
-  const fetchCrons = useCallback(async (envId: number) => {
-    setLoading('crons')
+  const fetchCrons = useCallback(async (envId: number, silent = false) => {
+    if (!silent) setLoading('crons')
     try {
       const data = await odooRepository.getCrons(envId)
       setCrons(data)
-    } catch {
+    } catch (err) {
+      console.error(`Failed to fetch crons for env ${envId}:`, err)
       toast.error('Failed to fetch crons')
+      throw err
     } finally {
-      setLoading(null)
+      if (!silent) setLoading(null)
     }
   }, [])
 
-  const fetchReport = useCallback(async (envId: number) => {
-    setLoading('report')
+  const fetchReport = useCallback(async (envId: number, silent = false) => {
+    if (!silent) setLoading('report')
     try {
       const data = await odooRepository.getDisbursementReport(envId)
       setReport(data)
-    } catch {
+    } catch (err) {
+      console.error(`Failed to fetch report for env ${envId}:`, err)
       toast.error('Failed to fetch report')
+      throw err
     } finally {
-      setLoading(null)
+      if (!silent) setLoading(null)
     }
   }, [])
 
@@ -90,19 +94,27 @@ export const useOdoo = (searchTerm: string) => {
   }, [fetchEnvs])
 
   useEffect(() => {
+    let isMounted = true
     const init = async () => {
       if (selectedEnvId) {
+        console.log(`Switching to environment: ${selectedEnvId}`)
         setCrons([])
         setReport([])
         setLoading('fetching')
         try {
-          await Promise.all([fetchCrons(selectedEnvId), fetchReport(selectedEnvId)])
+          await Promise.all([fetchCrons(selectedEnvId, true), fetchReport(selectedEnvId, true)])
+          console.log('Successfully fetched environment data')
+        } catch (err) {
+          console.error('Environment init failed:', err)
         } finally {
-          setLoading(null)
+          if (isMounted) setLoading(null)
         }
       }
     }
     init()
+    return () => {
+      isMounted = false
+    }
   }, [selectedEnvId, fetchCrons, fetchReport])
 
   const sortedCrons = useMemo(() => {

@@ -311,6 +311,7 @@ function App() {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         position={sidebarPosition}
+        setPosition={setSidebarPosition}
       />
 
       <main className="flex-1 flex flex-col relative overflow-hidden">
@@ -397,7 +398,7 @@ function App() {
 
               <CronTable
                 crons={filteredCrons}
-                loading={odooLoading === 'fetching'}
+                loading={!!odooLoading}
                 sortConfig={sortConfig}
                 onRequestSort={requestSort}
                 onToggle={toggleCron}
@@ -433,7 +434,7 @@ function App() {
               </div>
 
               {selectedEnvId ? (
-                <DisbursementReport report={odooReportData} loading={odooLoading === 'fetching'} />
+                <DisbursementReport report={odooReportData} loading={!!odooLoading} />
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">
                   <p className="text-ash font-bold uppercase tracking-widest text-sm">

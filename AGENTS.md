@@ -1,40 +1,37 @@
 # mytask | Agent Instructions
 
 ## Tech Stack
-- **Backend:** FastAPI, Pydantic v2, Prisma, APScheduler.
-- **Frontend:** React, TanStack Query v5, Zustand, Tailwind CSS, Shadcn UI.
+- **Backend:** FastAPI, Pydantic v2, Prisma, APScheduler, Ruff.
+- **Frontend:** React, TanStack Query v5, Zustand, Tailwind CSS, Shadcn UI, Recharts.
 
 ## Critical Constraints
-- **80% COVERAGE:** Mandatory for both FE and BE. Commits WILL fail if < 80%.
-- **TEST PURITY:** All tests must pass with **ZERO** warnings or errors in console/logs.
-- **NO COMMENTS:** Never add `#` or `//` explanations. Code must be self-documenting.
-- **NO ALERTS:** Never use `alert()` or `confirm()`. Use `toast` (react-hot-toast).
-- **TYPOGRAPHY:** Berkeley Mono ONLY. No sans-serif or serif fonts allowed.
-- **AESTHETIC:** Follow `design.md`. High-contrast, cream/ink, monospace, 4px corners.
+- **100% COVERAGE:** Mandatory for both FE and BE. Commits WILL fail if < 100%.
+- **TEST PURITY:** Zero warnings/errors in console. Mock `localStorage`, `URL`, `i18n` in FE.
+- **TYPOGRAPHY:** Berkeley Mono ONLY. No other fonts allowed.
+- **AESTHETIC:** High-contrast cream (`#fdfcfc`) / ink (`#201d1d`). 4px corners. ASCII markers `[+]`, `[-]`, `[x]`.
+- **NO COMMENTS:** Code must be self-documenting. No `#` or `//` explanations.
+- **NO ALERTS:** Use `toast` (react-hot-toast).
 
 ## Commands & Workflows
-- **Test & Coverage:** `make test` (full suite), `make test-backend`, `make test-frontend`.
-- **View Coverage:** `make cov` (opens HTML reports for both).
-- **Start All:** `make dev-local` (backend:8000, frontend:5173).
-- **DB Changes:** `cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate`.
-- **Frontend UI:** Use `npx shadcn-ui@latest add <component>` in `frontend/`.
-- **Verify:** `make lint` and `make format` before committing.
+- **Verify:** `make lint && make format && make test` (Run before EVERY commit).
+- **Test:** `make test-backend`, `make test-frontend`. `make cov` to view reports.
+- **DB:** `cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate`.
+- **Frontend UI:** Use `npx shadcn@latest add <component>` in `frontend/`.
+- **Port:** Backend :8000, Frontend :3000 (via `make dev-local`).
 
-## Architecture
+## Architecture & Conventions
 - **Backend (Hexagonal):**
-    - `app/core/`: Domain models and business logic services.
-    - `app/adapters/driven/`: Database (Prisma), Odoo (XML-RPC), S3 implementations.
-    - `app/adapters/driving/`: FastAPI endpoints, Scheduler, WebSockets.
+    - `app/core/`: Domain models and business logic. Use relative imports (`from . import`).
+    - `app/adapters/`: `driven/` (Prisma, S3, Odoo) and `driving/` (FastAPI, WS).
 - **Frontend (Clean):**
-    - `src/domain/`: Pure logic, models, and **Zustand stores** (`src/domain/store`).
-    - `src/ports/`: Interfaces (TypeScript types/interfaces).
-    - `src/adapters/`: API (**TanStack Query**), Storage, WebSocket implementations.
-    - `src/ui/`: Features (smart) and Components (dumb/Shadcn).
-    - **Path Alias:** Use `@/` to refer to `src/`.
+    - `src/domain/`: Pure logic & Zustand stores.
+    - `src/ports/`: Interfaces/Types.
+    - `src/adapters/`: API (TanStack Query) & Storage.
+    - `src/ui/`: `features/` (smart) and `components/` (dumb/Shadcn).
+- **Paths:** Always use `@/` alias in frontend (e.g., `@/lib/utils`, `@/ui/components`).
+- **Charts:** Use `ChartContainer` from `@/ui/components/ui/chart.tsx`. Wire to HSL variables.
 
 ## Common Pitfalls
-- **Prisma Client:** Run `prisma generate` in `backend/` if imports fail.
-- **Imports:** Backend uses relative imports (e.g., `from ...core...`).
-- **Tailwind:** Colors and 4px radius are strictly defined in `tailwind.config.js`.
-- **Browser APIs:** Mock `localStorage`, `URL.createObjectURL`, and `i18n` in FE tests.
-- **Pre-commit:** Enforces linting and 80% coverage. Do not bypass without extreme reason.
+- **Prisma:** If imports fail, run `prisma generate` in `backend/`.
+- **Tailwind:** Colors and 4px radius are locked in `tailwind.config.js`. Do not override with hex codes.
+- **Pre-commit:** Enforces 100% coverage. Use `pytest -vv` to debug BE test failures.

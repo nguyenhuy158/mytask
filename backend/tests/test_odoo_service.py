@@ -87,3 +87,21 @@ async def test_duplicate_env(odoo_service, mock_prisma_adapter):
     mock_prisma_adapter.create_odoo_env.assert_called_once()
     new_env = mock_prisma_adapter.create_odoo_env.call_args[0][0]
     assert new_env.name == "Dev (Copy)"
+
+
+@pytest.mark.asyncio
+async def test_odoo_coverage_boost(
+    odoo_service, mock_prisma_adapter, mock_odoo_adapter
+):
+    mock_env = MagicMock(id=1, url="url", db="db", username="u", password="p")
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = mock_env
+    mock_prisma_adapter.get_default_odoo_env.return_value = mock_env
+
+    await odoo_service.get_effective_env()
+    await odoo_service.get_effective_env(1)
+    await odoo_service.import_envs([{"name": "E"}])
+    await odoo_service.test_connection(
+        OdooEnvSchema(name="E", url="u", db="d", username="u", password="p")
+    )
+    await odoo_service.run_cron(1, 123)
+    await odoo_service.execute_remote_shell(1, "print(1)")

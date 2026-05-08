@@ -8,18 +8,20 @@ Marketing system and TUI-inspired dashboard for Odoo task management.
 
 ## Commands
 - **Local Dev:** `make dev-local` (both), `make dev-backend`, `make dev-frontend`.
-- **Docker:** `make up`, `make down`, `make build`, `make logs`.
+- **Quality:** `make lint && make format && make test`.
+- **Coverage:** `make cov` (Mandatory 100% threshold).
 - **Setup:** `make setup-dev`, `make setup-host`.
-- **Code Quality:** `make lint`, `make format`.
 - **Backend Run:** `cd backend && uv run uvicorn app.main:app --reload`
-- **Frontend Run:** `cd frontend && pnpm dev`
+- **Frontend Run:** `cd frontend && pnpm dev --port 3000`
 
 ## Coding Standards
+- **Coverage:** 100% mandatory for both FE and BE.
 - **No Comments:** Code must be clean and self-documenting. No `#` or `//` for explanations.
 - **Self-Documenting:** Use descriptive names for functions and variables.
 - **No Duplication:** Follow DRY principles. Extract reusable logic.
 - **No Single-Letter Variables:** Use `index` instead of `i`, `task_id` instead of `t`.
 - **Modern Tools:** Use `uv` for Python and `pnpm` for Node.
+- **Imports:** Use `@/` for frontend imports and relative imports for backend core.
 
 ## Backend Guidelines
 - **Structure:** `app/main.py` (entry), `app/core/` (logic), `app/adapters/` (external systems).

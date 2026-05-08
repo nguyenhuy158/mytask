@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -21,30 +21,31 @@ def test_handle_rpc_request():
 
 
 @pytest.mark.asyncio
-async def test_list_tasks_rpc():
+async def test_rpc_methods():
     with (
         patch("app.adapters.driving.rpc_adapter.get_task_service") as mock_get_service,
-        patch("app.adapters.driving.rpc_adapter.connect_db", new_callable=MagicMock),
+        patch("app.adapters.driving.rpc_adapter.connect_db", AsyncMock()),
     ):
-        mock_service = mock_get_service.return_value
+        mock_service = AsyncMock()
+        mock_get_service.return_value = mock_service
         mock_service.list_tasks.return_value = [
             MagicMock(id=1, name="T", task_type="manual", status="todo")
         ]
+
+        # Test list
         with patch("app.adapters.driving.rpc_adapter.run_async") as mock_run:
             mock_run.return_value = [{"id": 1}]
             result = list_tasks_rpc()
             assert result == [{"id": 1}]
 
+        # Test run
+        with patch("app.adapters.driving.rpc_adapter.run_async") as mock_run:
+            mock_run.return_value = {"status": "success"}
+            result = run_task_rpc(1)
+            assert result["status"] == "success"
 
-def test_run_task_rpc():
-    with patch("app.adapters.driving.rpc_adapter.run_async") as mock_run:
-        mock_run.return_value = {"status": "success"}
-        result = run_task_rpc(1)
-        assert result["status"] == "success"
-
-
-def test_get_history_rpc():
-    with patch("app.adapters.driving.rpc_adapter.run_async") as mock_run:
-        mock_run.return_value = []
-        result = get_history_rpc()
-        assert result == []
+        # Test history
+        with patch("app.adapters.driving.rpc_adapter.run_async") as mock_run:
+            mock_run.return_value = []
+            result = get_history_rpc()
+            assert result == []

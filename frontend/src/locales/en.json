@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "executing": "Executing...",
+    "saving": "Saving...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "sidebar": {
+    "app_name": "OPENCODE",
+    "task_manager": "Task Manager",
+    "status": "Status",
+    "live_sync_active": "LIVE_SYNC_ACTIVE",
+    "offline": "OFFLINE"
+  },
+  "task": {
+    "initialize_task": "Initialize_Task",
+    "name_placeholder": "E.g. REFACTOR_AUTH_LAYER",
+    "description_placeholder": "What needs to be done?",
+    "priority": "Priority",
+    "estimated_time": "Est. Minutes",
+    "add_task": "Add Task",
+    "todo": "TODO",
+    "doing": "DOING",
+    "done": "DONE"
+  },
+  "odoo": {
+    "shell_format": "Format: model|method|args|kwargs",
+    "shell_placeholder": "Enter shell command..."
+  }
+}

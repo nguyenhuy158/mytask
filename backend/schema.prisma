@@ -1,0 +1,94 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./tasks.db"
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+model OdooEnv {
+  id       Int    @id @default(autoincrement())
+  name     String
+  url      String
+  db       String
+  username String
+  password String
+  color    String @default("gray")
+}
+
+model TaskConfig {
+  id               Int           @id @default(autoincrement())
+  name             String
+  description      String
+  task_type        String
+  status           String        @default("todo")
+  cron_expression  String?
+  total_seconds    Int           @default(0)
+  timer_started_at DateTime?
+  priority         Int           @default(3)
+  deadline         DateTime?
+  estimated_time   Int?
+  parent_id        Int?
+  dependencies     String?
+  project_id       Int?
+  odoo_env_id      Int?
+  odoo_project_id  Int?
+  odoo_task_id     Int?
+  history          TaskHistory[]
+  notes            Note[]
+}
+
+model Note {
+  id        Int        @id @default(autoincrement())
+  title     String
+  content   String
+  task_id   Int?
+  project_id Int?
+  task      TaskConfig? @relation(fields: [task_id], references: [id])
+  timestamp DateTime   @default(now())
+}
+
+model TaskHistory {
+  id        Int        @id @default(autoincrement())
+  task_id   Int
+  task_name String
+  result    String
+  timestamp DateTime   @default(now())
+  task      TaskConfig @relation(fields: [task_id], references: [id], onDelete: Cascade)
+}
+
+model WebhookConfig {
+  id     Int     @id @default(autoincrement())
+  name   String
+  type   String  @default("webhook")
+  url    String?
+  secret String?
+  target String?
+  active Int     @default(1)
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  details   String
+  timestamp DateTime @default(now())
+}
+
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
+
+model S3Config {
+  id         Int     @id @default(autoincrement())
+  name       String
+  endpoint   String
+  region     String
+  bucket     String
+  access_key String
+  secret_key String
+  active     Boolean @default(true)
+}

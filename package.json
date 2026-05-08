@@ -1,0 +1,30 @@
+{
+  "name": "mytask",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "backend/**/*.py": [
+      "uv run ruff check --fix",
+      "uv run ruff format"
+    ],
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "pnpm -C frontend exec eslint --fix",
+      "pnpm -C frontend exec prettier --write"
+    ],
+    "frontend/**/*.{json,css,md}": [
+      "pnpm -C frontend exec prettier --write"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.26.2",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  }
+}

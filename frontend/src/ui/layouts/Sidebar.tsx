@@ -1,0 +1,125 @@
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+
+interface SidebarProps {
+  activeTab: string
+  setActiveTab: (tab: string) => void
+  wsConnected: boolean
+  darkMode: boolean
+  setDarkMode: (dark: boolean) => void
+  position: 'left' | 'right' | 'top' | 'bottom'
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeTab,
+  setActiveTab,
+  wsConnected,
+  darkMode,
+  setDarkMode,
+  position,
+}) => {
+  const { t, i18n } = useTranslation()
+
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === 'en' ? 'vi' : 'en'
+    i18n.changeLanguage(nextLang)
+  }
+
+  const tabs = [
+    { id: 'tasks', label: t('sidebar.task_manager') },
+    { id: 'crons', label: 'Cron Jobs' },
+    { id: 'reports', label: 'Reports' },
+    { id: 'envs', label: 'Environments' },
+    { id: 'wiki', label: 'Wiki' },
+    { id: 's3', label: 'S3 Explorer' },
+    { id: 'analytics', label: 'Analytics' },
+    { id: 'config', label: 'Config' },
+    { id: 'backups', label: 'Backups' },
+    { id: 'webhooks', label: 'Webhooks' },
+  ]
+
+  const isVertical = position === 'left' || position === 'right'
+
+  const asideClasses = {
+    left: 'w-64 border-r flex-col',
+    right: 'w-64 border-l flex-col',
+    top: 'w-full h-auto border-b flex-row items-center justify-between',
+    bottom: 'w-full h-auto border-t flex-row items-center justify-between',
+  }[position]
+
+  return (
+    <aside className={`${asideClasses} border-hairline bg-canvas z-20`}>
+      <div className={`${isVertical ? 'p-6 border-b' : 'px-8 py-4 border-r'} border-hairline`}>
+        <div className="text-xl font-bold tracking-tight">{t('sidebar.app_name')}</div>
+        {isVertical && (
+          <div className="text-[10px] mt-1 text-mute uppercase tracking-widest">
+            {t('sidebar.task_manager')}
+          </div>
+        )}
+      </div>
+
+      <nav
+        className={`flex-1 ${isVertical ? 'px-4 py-6 space-y-2' : 'px-6 flex flex-row gap-4 overflow-x-auto scrollbar-hide'}`}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`${
+              isVertical ? 'w-full' : 'whitespace-nowrap'
+            } flex items-center gap-3 px-4 py-2 rounded-sm transition-all duration-200 ${
+              activeTab === tab.id
+                ? 'bg-primary text-on-primary'
+                : 'hover:bg-surface-soft text-mute'
+            }`}
+          >
+            <span className="text-sm">
+              {activeTab === tab.id ? '[x]' : '[ ]'} {tab.label}
+            </span>
+          </button>
+        ))}
+      </nav>
+
+      <div
+        className={`${isVertical ? 'p-6 border-t' : 'px-8 py-4 border-l'} border-hairline text-xs flex ${isVertical ? 'flex-col' : 'flex-row items-center gap-8'}`}
+      >
+        {isVertical && (
+          <div className="text-[10px] font-bold text-mute uppercase tracking-widest mb-2">
+            {t('sidebar.status')}
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <div
+            className={`w-1.5 h-1.5 rounded-full ${
+              wsConnected ? 'bg-success animate-pulse' : 'bg-danger'
+            }`}
+          ></div>
+          <span className="font-bold">
+            {wsConnected ? t('sidebar.live_sync_active') : t('sidebar.offline')}
+          </span>
+        </div>
+
+        <div className={`flex ${isVertical ? 'mt-4 flex-col gap-4' : 'flex-row gap-6'}`}>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-ash font-bold uppercase tracking-widest text-[9px]">Lang</span>
+            <button
+              onClick={toggleLanguage}
+              className="text-mute hover:text-ink transition-colors font-bold uppercase"
+            >
+              [{i18n.language}]
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-ash font-bold uppercase tracking-widest text-[9px]">Night</span>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="text-mute hover:text-ink transition-colors font-bold"
+            >
+              {darkMode ? '[ON]' : '[OFF]'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}

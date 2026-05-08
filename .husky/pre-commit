@@ -1,0 +1,5 @@
+npx lint-staged
+make test-backend
+make test-frontend
+# E2E is optional for local commits to avoid flakiness
+# make test-e2e

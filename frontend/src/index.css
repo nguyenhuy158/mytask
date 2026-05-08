@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Berkeley Mono', 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+  line-height: 1.5;
+  font-weight: 400;
+
+  --color-primary: #201d1d;
+  --color-on-primary: #fdfcfc;
+  --color-ink: #201d1d;
+  --color-charcoal: #302c2c;
+  --color-body: #424245;
+  --color-mute: #646262;
+  --color-stone: #6e6e73;
+  --color-ash: #9a9898;
+  --color-canvas: #fdfcfc;
+  --color-surface-soft: #f8f7f7;
+  --color-surface-card: #f1eeee;
+  --color-hairline: rgba(15, 0, 0, 0.12);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark {
+  --color-primary: #fdfcfc;
+  --color-on-primary: #201d1d;
+  --color-ink: #fdfcfc;
+  --color-charcoal: #e0e0e0;
+  --color-body: #d1d1d6;
+  --color-mute: #a1a1aa;
+  --color-stone: #8e8e93;
+  --color-ash: #71717a;
+  --color-canvas: #1c1c1e;
+  --color-surface-soft: #2c2c2e;
+  --color-surface-card: #3a3a3c;
+  --color-hairline: rgba(255, 255, 255, 0.12);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-mono;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-surface-soft;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-hairline rounded-sm hover:bg-mute transition-colors;
+}

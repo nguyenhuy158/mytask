@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+apscheduler
+requests
+python-dotenv
+websockets
+slowapi
+prisma
+ruff
+boto3

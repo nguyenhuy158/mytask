@@ -1,0 +1,14 @@
+{
+  "SUCCESS": "Operation successful",
+  "ERROR": "An error occurred",
+  "NOT_FOUND": "Resource not found",
+  "S3_NOT_FOUND": "S3 configuration not found",
+  "SYSTEM_STARTUP_MSG": "FastAPI server started with Hexagonal Architecture",
+  "TASK_CREATED": "Task created: {name}",
+  "TASK_UPDATED": "Task updated: {name}",
+  "TASK_DELETED": "Task deleted: {id}",
+  "TIMER_STARTED": "Timer started for task: {id}",
+  "TIMER_STOPPED": "Timer stopped for task: {id}",
+  "BACKUP_COMPLETED": "Backup sequence triggered: {result}",
+  "BACKUP_FAILED": "Backup failed: {error}"
+}

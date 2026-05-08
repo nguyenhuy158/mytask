@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "executing": "Đang thực thi...",
+    "saving": "Đang lưu...",
+    "success": "Thành công",
+    "error": "Lỗi"
+  },
+  "sidebar": {
+    "app_name": "OPENCODE",
+    "task_manager": "Quản lý nhiệm vụ",
+    "status": "Trạng thái",
+    "live_sync_active": "ĐỒNG BỘ TRỰC TIẾP",
+    "offline": "NGOẠI TUYẾN"
+  },
+  "task": {
+    "initialize_task": "Khởi tạo nhiệm vụ",
+    "name_placeholder": "VD: TÁI CẤU TRÚC LỚP AUTH",
+    "description_placeholder": "Cần phải làm gì?",
+    "priority": "Ưu tiên",
+    "estimated_time": "Thời gian dự kiến (phút)",
+    "add_task": "Thêm nhiệm vụ",
+    "todo": "CẦN LÀM",
+    "doing": "ĐANG LÀM",
+    "done": "HOÀN THÀNH"
+  },
+  "odoo": {
+    "shell_format": "Định dạng: model|method|args|kwargs",
+    "shell_placeholder": "Nhập lệnh shell..."
+  }
+}

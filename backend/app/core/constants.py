@@ -1,0 +1,30 @@
+class TaskStatus:
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
+    DONE = "done"
+    BACKLOG = "backlog"
+
+
+class TaskPriority:
+    LOW = 1
+    MEDIUM = 3
+    HIGH = 5
+
+
+class AuditLogType:
+    SYSTEM_STARTUP = "SYSTEM_STARTUP"
+    TASK_CREATED = "TASK_CREATED"
+    TASK_UPDATED = "TASK_UPDATED"
+    TASK_DELETED = "TASK_DELETED"
+    TIMER_STARTED = "TIMER_STARTED"
+    TIMER_STOPPED = "TIMER_STOPPED"
+    BACKUP_COMPLETED = "BACKUP_COMPLETED"
+    BACKUP_FAILED = "BACKUP_FAILED"
+
+
+class ResponseMessage:
+    SUCCESS = "SUCCESS"
+    ERROR = "ERROR"
+    NOT_FOUND = "NOT_FOUND"
+    S3_NOT_FOUND = "S3_NOT_FOUND"
+    SYSTEM_STARTUP_MSG = "SYSTEM_STARTUP_MSG"

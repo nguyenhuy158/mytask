@@ -1,0 +1,14 @@
+{
+  "SUCCESS": "Thao tác thành công",
+  "ERROR": "Đã xảy ra lỗi",
+  "NOT_FOUND": "Không tìm thấy tài nguyên",
+  "S3_NOT_FOUND": "Không tìm thấy cấu hình S3",
+  "SYSTEM_STARTUP_MSG": "Hệ thống FastAPI đã khởi động với Kiến trúc Lục giác",
+  "TASK_CREATED": "Đã tạo nhiệm vụ: {name}",
+  "TASK_UPDATED": "Đã cập nhật nhiệm vụ: {name}",
+  "TASK_DELETED": "Đã xóa nhiệm vụ: {id}",
+  "TIMER_STARTED": "Đã bắt đầu đồng hồ cho nhiệm vụ: {id}",
+  "TIMER_STOPPED": "Đã dừng đồng hồ cho nhiệm vụ: {id}",
+  "BACKUP_COMPLETED": "Chuỗi sao lưu đã được kích hoạt: {result}",
+  "BACKUP_FAILED": "Sao lưu thất bại: {error}"
+}

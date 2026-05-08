@@ -17,11 +17,16 @@ import { ApprovalSpeedChart } from './ApprovalSpeedChart'
 interface DisbursementReportProps {
   report: IDisbursementReport[]
   loading: boolean
+  envUrl?: string
 }
 
 type FilterRange = '3d' | '7d' | '30d' | 'this_month' | 'last_month' | 'all'
 
-export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, loading }) => {
+export const DisbursementReport: React.FC<DisbursementReportProps> = ({
+  report,
+  loading,
+  envUrl,
+}) => {
   const [range, setRange] = useState<FilterRange>('3d')
   const [sortConfig, setSortConfig] = useState<{
     key: keyof IDisbursementReport | 'approve_uid_name'
@@ -196,6 +201,13 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
     return sortConfig.direction === 'asc' ? '[↑]' : '[↓]'
   }
 
+  const openOdooRecord = (id: number) => {
+    if (!envUrl) return
+    const cleanUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl
+    const url = `${cleanUrl}/web#id=${id}&model=sale.disbursement&view_type=form`
+    window.open(url, '_blank')
+  }
+
   return (
     <div className="space-y-12">
       {/* Filters Header */}
@@ -223,7 +235,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="border border-ink p-6 space-y-2 bg-canvas">
+        <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Avg (Today)
           </Typography>
@@ -238,7 +250,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
           </div>
         </div>
 
-        <div className="border border-ink p-6 space-y-2 bg-canvas">
+        <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Total Approved
           </Typography>
@@ -250,7 +262,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
           </div>
         </div>
 
-        <div className="border border-ink p-6 space-y-2 bg-canvas">
+        <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Fastest
           </Typography>
@@ -260,7 +272,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
           </div>
         </div>
 
-        <div className="border border-ink p-6 space-y-2 bg-canvas">
+        <div className="border border-ink p-6 space-y-2 bg-canvas shadow-sm">
           <Typography variant="label" className="text-ash uppercase">
             Slowest
           </Typography>
@@ -275,24 +287,31 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
         {/* Classification */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 border-l-4 border-success pl-4">
-            <Typography variant="h3" className="uppercase">
+            <Typography variant="h3" className="uppercase tracking-widest">
               Classification (Avg)
             </Typography>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             {stats.classification.map((item) => (
-              <div key={item.kind} className="space-y-2 border border-hairline p-4 bg-surface-soft">
-                <div className="flex justify-between items-center">
-                  <Typography variant="label" className="font-bold uppercase">
-                    {item.kind}
+              <div
+                key={item.kind}
+                className="bg-canvas border border-hairline p-6 flex flex-col justify-between hover:border-ink transition-colors group shadow-sm min-h-[100px]"
+              >
+                <div className="flex justify-between items-start">
+                  <Typography
+                    variant="label"
+                    className="font-bold uppercase text-ash tracking-[0.2em] text-[10px]"
+                  >
+                    {item.kind || 'OTHER'}
                   </Typography>
-                  <Typography variant="code" className="font-bold">
-                    {item.avg.toFixed(1)}m
+                  <Typography variant="h3" className="font-bold tabular-nums">
+                    {item.avg.toFixed(1)}
+                    <span className="text-[10px] ml-1">m</span>
                   </Typography>
                 </div>
-                <div className="h-1 bg-ink/5 overflow-hidden">
+                <div className="w-full h-[2px] bg-surface-soft mt-4 overflow-hidden relative">
                   <div
-                    className="h-full bg-ink"
+                    className="absolute left-0 top-0 h-full bg-ink transition-all duration-1000"
                     style={{ width: `${Math.min(100, (item.avg / (stats.slowest || 1)) * 100)}%` }}
                   />
                 </div>
@@ -304,23 +323,28 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
         {/* Top 5 Slowest */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center gap-2 border-l-4 border-danger pl-4">
-            <Typography variant="h3" className="uppercase">
+            <Typography variant="h3" className="uppercase tracking-widest">
               Top 5 Slowest Approvals
             </Typography>
           </div>
           <Table>
             <TableHeader>
               <TableHeaderCell>Reference</TableHeaderCell>
+              <TableHeaderCell>Project</TableHeaderCell>
               <TableHeaderCell>Type</TableHeaderCell>
               <TableHeaderCell align="right">Duration</TableHeaderCell>
               <TableHeaderCell>Approver</TableHeaderCell>
+              <TableHeaderCell align="right">Action</TableHeaderCell>
             </TableHeader>
             <TableBody>
               {stats.top5Slowest.map((rec) => (
                 <TableRow key={rec.id}>
                   <TableCell className="font-bold uppercase">{rec.name}</TableCell>
+                  <TableCell className="text-ash text-[10px] font-bold uppercase truncate max-w-[120px]">
+                    {rec.project_name}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={getKindVariant(rec.kind)} className="uppercase">
+                    <Badge variant={getKindVariant(rec.kind)} className="uppercase text-[9px]">
                       {rec.kind}
                     </Badge>
                   </TableCell>
@@ -329,6 +353,14 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
                   </TableCell>
                   <TableCell className="text-[10px] font-bold uppercase">
                     {rec.approve_uid ? rec.approve_uid[1] : '-'}
+                  </TableCell>
+                  <TableCell align="right">
+                    <button
+                      onClick={() => openOdooRecord(rec.id)}
+                      className="text-[9px] font-bold border border-ink px-2 py-0.5 hover:bg-ink hover:text-on-primary transition-all uppercase tracking-tighter"
+                    >
+                      [OPEN_ODOO]
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -353,10 +385,10 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Typography variant="h3" className="uppercase">
+            <Typography variant="h3" className="uppercase tracking-widest">
               Disbursement Speed (Raw Data)
             </Typography>
-            <Typography variant="code" className="text-ash">
+            <Typography variant="code" className="text-ash text-[10px]">
               COUNT: {filteredReport.length}
             </Typography>
           </div>
@@ -364,6 +396,9 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
             <TableHeader>
               <TableHeaderCell onClick={() => handleSort('name')}>
                 <div className="flex items-center gap-2">Reference {getSortIcon('name')}</div>
+              </TableHeaderCell>
+              <TableHeaderCell onClick={() => handleSort('project_name')}>
+                <div className="flex items-center gap-2">Project {getSortIcon('project_name')}</div>
               </TableHeaderCell>
               <TableHeaderCell onClick={() => handleSort('kind')}>
                 <div className="flex items-center gap-2">Type {getSortIcon('kind')}</div>
@@ -388,13 +423,17 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
                   Duration (Min) {getSortIcon('approval_duration')}
                 </div>
               </TableHeaderCell>
+              <TableHeaderCell align="right">Action</TableHeaderCell>
             </TableHeader>
             <TableBody>
               {sortedReport.map((rec) => (
                 <TableRow key={rec.id}>
                   <TableCell className="font-bold uppercase">{rec.name}</TableCell>
+                  <TableCell className="text-ash text-[10px] font-bold uppercase truncate max-w-[150px]">
+                    {rec.project_name}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={getKindVariant(rec.kind)} className="uppercase">
+                    <Badge variant={getKindVariant(rec.kind)} className="uppercase text-[9px]">
                       {rec.kind}
                     </Badge>
                   </TableCell>
@@ -413,11 +452,19 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({ report, 
                   >
                     {rec.approval_duration.toFixed(1)}
                   </TableCell>
+                  <TableCell align="right">
+                    <button
+                      onClick={() => openOdooRecord(rec.id)}
+                      className="text-[9px] font-bold border border-ink px-2 py-0.5 hover:bg-ink hover:text-on-primary transition-all uppercase tracking-tighter"
+                    >
+                      [OPEN]
+                    </button>
+                  </TableCell>
                 </TableRow>
               ))}
               {filteredReport.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={8} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2 text-mute">
                       <span className="text-[10px] font-bold uppercase tracking-widest">
                         NO_DATA_IN_THIS_RANGE

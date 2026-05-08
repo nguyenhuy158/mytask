@@ -301,6 +301,8 @@ function App() {
     bottom: 'flex-col-reverse',
   }[sidebarPosition]
 
+  const selectedEnv = envs.find((e) => e.id === selectedEnvId)
+
   return (
     <div
       className={`flex h-screen bg-canvas overflow-hidden font-mono text-ink ${containerClasses}`}
@@ -435,7 +437,11 @@ function App() {
               </div>
 
               {selectedEnvId ? (
-                <DisbursementReport report={odooReportData} loading={!!odooLoading} />
+                <DisbursementReport
+                  report={odooReportData}
+                  loading={!!odooLoading}
+                  envUrl={selectedEnv?.url}
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">
                   <p className="text-ash font-bold uppercase tracking-widest text-sm">

@@ -15,5 +15,6 @@ export interface DisbursementReport {
   confirm_date: string
   approve_date: string
   approve_uid: [number, string]
+  project_name: string
   approval_duration: number
 }

@@ -77,6 +77,10 @@ function App() {
   const [testingEnvId, setTestingEnvId] = useState<number | null>(null)
   const [testingWebhookId, setTestingWebhookId] = useState<number | null>(null)
   const [showFocusMode, setShowFocusMode] = useState(false)
+  const [showPomodoro, setShowPomodoro] = useState(() => {
+    const saved = localStorage.getItem('showPomodoro')
+    return saved === 'true'
+  })
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : true
@@ -236,6 +240,10 @@ function App() {
   }, [sidebarPosition])
 
   useEffect(() => {
+    localStorage.setItem('showPomodoro', String(showPomodoro))
+  }, [showPomodoro])
+
+  useEffect(() => {
     wsAdapter.connect(
       (data) => {
         if (data.type === 'TASK_COMPLETED') {
@@ -340,7 +348,7 @@ function App() {
           }}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-12">
+        <div className="flex-1 overflow-y-auto p-2 md:p-12">
           {activeTab === 'tasks' && (
             <div className="space-y-8 max-w-7xl mx-auto">
               <div className="border-b border-ink pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -538,15 +546,32 @@ function App() {
                       <button
                         key={pos}
                         onClick={() => setSidebarPosition(pos)}
-                        className={`text-[10px] font-bold px-3 py-1 border ${
+                        className={`text-[10px] font-bold px-2 md:px-3 py-1 border ${
                           sidebarPosition === pos
                             ? 'bg-ink text-on-primary border-ink'
                             : 'border-hairline hover:border-ink'
                         }`}
                       >
-                        [{pos.toUpperCase()}]
+                        <span className="hidden md:inline">[{pos.toUpperCase()}]</span>
+                        <span className="md:hidden">[{pos[0].toUpperCase()}]</span>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Widgets</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowPomodoro(!showPomodoro)}
+                      className={`text-[10px] font-bold px-3 py-1 border ${
+                        showPomodoro
+                          ? 'bg-ink text-on-primary border-ink'
+                          : 'border-hairline hover:border-ink'
+                      }`}
+                    >
+                      [POMODORO_TIMER: {showPomodoro ? 'ON' : 'OFF'}]
+                    </button>
                   </div>
                 </div>
 
@@ -740,9 +765,11 @@ function App() {
       />
 
       <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">
-        <Draggable className="pointer-events-auto">
-          <PomodoroTimer />
-        </Draggable>
+        {showPomodoro && (
+          <Draggable className="pointer-events-auto">
+            <PomodoroTimer />
+          </Draggable>
+        )}
         <Draggable className="pointer-events-auto">
           <LogStream />
         </Draggable>

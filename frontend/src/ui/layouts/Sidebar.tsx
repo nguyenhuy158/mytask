@@ -55,8 +55,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isVertical = position === 'left' || position === 'right'
 
   const asideClasses = {
-    left: 'w-16 md:w-64 border-r flex-col',
-    right: 'w-16 md:w-64 border-l flex-col',
+    left: 'w-14 md:w-64 border-r flex-col flex-shrink-0',
+    right: 'w-14 md:w-64 border-l flex-col flex-shrink-0',
     top: 'w-full h-auto border-b flex-row items-center justify-between',
     bottom: 'w-full h-auto border-t flex-row items-center justify-between',
   }[position]
@@ -93,14 +93,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`${
-                isVertical ? 'w-full' : 'whitespace-nowrap'
-              } flex items-center gap-3 px-4 py-2 rounded-sm transition-all duration-200 ${
+                isVertical ? 'w-full justify-center md:justify-start' : 'whitespace-nowrap'
+              } flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 rounded-sm transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'bg-primary text-on-primary'
                   : 'hover:bg-surface-soft text-mute'
               }`}
             >
-              <Icon size={16} className={activeTab === tab.id ? 'text-canvas' : 'text-ash'} />
+              <Icon
+                style={{ width: '16px', height: '16px' }}
+                className={activeTab === tab.id ? 'text-canvas' : 'text-ash'}
+              />
               <span className="text-sm hidden md:inline">{tab.label}</span>
             </button>
           )

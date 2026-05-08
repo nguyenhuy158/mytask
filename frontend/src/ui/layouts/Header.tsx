@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNew,
 }) => {
   return (
-    <header className="h-14 border-b border-hairline flex items-center justify-between px-4 md:px-8 z-10">
+    <header className="h-14 border-b border-hairline flex items-center justify-between px-2 md:px-8 z-10">
       <div className="flex items-center gap-4 flex-1">
         <div className="relative w-full max-w-sm">
           <input

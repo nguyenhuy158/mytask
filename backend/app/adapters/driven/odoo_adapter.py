@@ -138,18 +138,13 @@ class OdooAdapter(OdooPort):
                         "confirm_date",
                         "approve_date",
                         "approve_uid",
-                        "project_id",
                     ]
                 },
             )
 
             for rec in records:
-                # Handle project_id (many2one)
-                project_id = rec.get("project_id")
-                if isinstance(project_id, (list, tuple)) and len(project_id) > 1:
-                    rec["project_name"] = project_id[1]
-                else:
-                    rec["project_name"] = "N/A"
+                # Project info is not directly on sale.disbursement
+                rec["project_name"] = "N/A"
 
                 try:
                     # Odoo returns UTC strings: 'YYYY-MM-DD HH:MM:SS'

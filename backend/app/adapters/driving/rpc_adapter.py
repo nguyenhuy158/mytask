@@ -2,22 +2,19 @@ import asyncio
 import logging
 from xmlrpc.server import SimpleXMLRPCDispatcher
 
-from .adapters.driven.http_adapter import HttpAdapter
-from .adapters.driven.odoo_adapter import OdooAdapter
-from .adapters.driven.prisma_adapter import PrismaAdapter
-from .adapters.driving.websocket_adapter import WebSocketAdapter
-from .core.services.task_service import TaskService
-from .database import connect_db
+from ...core.services.task_service import TaskService
+from ..driven.database import connect_db
+from ..driven.http_adapter import HttpAdapter
+from ..driven.odoo_adapter import OdooAdapter
+from ..driven.prisma_adapter import PrismaAdapter
+from .websocket_adapter import WebSocketAdapter
 
 logger = logging.getLogger(__name__)
 
-# Initialize dependencies for RPC (Standalone for now)
 prisma_adapter = PrismaAdapter()
 http_adapter = HttpAdapter()
 odoo_adapter = OdooAdapter()
-ws_adapter = (
-    WebSocketAdapter()
-)  # Won't actually broadcast to active WS if used this way, but fulfills interface
+ws_adapter = WebSocketAdapter()
 
 task_service = TaskService(
     repository=prisma_adapter,
@@ -27,7 +24,6 @@ task_service = TaskService(
     odoo_port=odoo_adapter,
 )
 
-# Dispatcher for XML-RPC
 dispatcher = SimpleXMLRPCDispatcher(allow_none=True, encoding=None)
 
 
@@ -80,7 +76,6 @@ def get_history_rpc(limit=10):
     return run_async(_history())
 
 
-# Register functions
 dispatcher.register_function(list_tasks_rpc, "tasks.list")
 dispatcher.register_function(run_task_rpc, "tasks.run")
 dispatcher.register_function(get_history_rpc, "tasks.history")

@@ -1,6 +1,6 @@
 import pytest
 
-from app.database import connect_db, disconnect_db
+from app.adapters.driven.database import connect_db, disconnect_db
 
 
 @pytest.fixture(autouse=True, scope="function")

@@ -7,7 +7,7 @@ from ...core.entities.models import (
     WebhookConfigSchema,
 )
 from ...core.ports.repository import RepositoryPort
-from ...database import connect_db, db
+from .database import connect_db, db
 
 
 class PrismaAdapter(RepositoryPort):

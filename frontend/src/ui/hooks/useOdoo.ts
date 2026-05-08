@@ -24,7 +24,10 @@ export const useOdoo = (searchTerm: string) => {
       const data = await odooRepository.getEnvs()
       setEnvs(data)
       if (data.length > 0 && !selectedEnvId) {
-        setSelectedEnvId(data[0].id)
+        const defaultEnv = data.find((e) => e.is_default)
+        if (defaultEnv) {
+          setSelectedEnvId(defaultEnv.id)
+        }
       }
     } catch {
       toast.error('Failed to fetch environments')
@@ -184,6 +187,21 @@ export const useOdoo = (searchTerm: string) => {
     }
   }, [])
 
+  const setDefaultEnv = useCallback(async (id: number) => {
+    try {
+      await odooRepository.setDefaultEnv(id)
+      setEnvs((prev) =>
+        prev.map((e) => ({
+          ...e,
+          is_default: e.id === id,
+        })),
+      )
+      toast.success('Default environment set')
+    } catch {
+      toast.error('Failed to set default environment')
+    }
+  }, [])
+
   const testEnv = useCallback(async (id: number) => {
     try {
       const res = await odooRepository.testEnv(id)
@@ -244,6 +262,7 @@ export const useOdoo = (searchTerm: string) => {
     updateEnv,
     deleteEnv,
     duplicateEnv,
+    setDefaultEnv,
     testEnv,
     fetchReport,
     exportEnvs,

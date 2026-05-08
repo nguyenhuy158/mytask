@@ -1,4 +1,5 @@
 import React from 'react'
+import { Star } from 'lucide-react'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Card, CardHeader, CardBody } from '../components/Card'
 import { Button } from '../components/Button'
@@ -12,6 +13,7 @@ interface EnvCardProps {
   onEdit: (env: OdooEnv) => void
   onDelete: (id: number) => void
   onDuplicate: (id: number) => void
+  onSetDefault: (id: number) => void
 }
 
 export const EnvCard: React.FC<EnvCardProps> = ({
@@ -22,68 +24,105 @@ export const EnvCard: React.FC<EnvCardProps> = ({
   onEdit,
   onDelete,
   onDuplicate,
+  onSetDefault,
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <div
-              className="w-3 h-3 cursor-pointer ring-1 ring-ink/20 hover:ring-ink transition-all"
-              style={{ backgroundColor: env.color || 'gray' }}
-              title="Click to change color"
-              onClick={() => document.getElementById(`color-input-${env.id}`)?.click()}
-            ></div>
-            <input
-              id={`color-input-${env.id}`}
-              type="color"
-              className="absolute opacity-0 pointer-events-none w-0 h-0"
-              value={env.color || '#808080'}
-              onChange={(e) => onUpdate(env.id, { color: e.target.value })}
-            />
-          </div>
-          <div>
-            <Typography variant="h2">{env.name}</Typography>
-            <Typography variant="label" className="mt-1 lowercase block">
-              {env.url}
-            </Typography>
-          </div>
+    <Card className="relative group overflow-hidden">
+      {env.is_default && (
+        <div className="absolute top-0 left-0 bg-success text-canvas text-[8px] font-bold px-2 py-0.5 z-10 flex items-center gap-1">
+          <Star size={8} fill="currentColor" />
+          DEFAULT
         </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="link"
-            size="xs"
-            onClick={() => onTest(env.id)}
-            disabled={testingEnvId === env.id}
-            className="disabled:opacity-50"
-          >
-            {testingEnvId === env.id ? 'TESTING...' : '[TEST_CONNECTION]'}
-          </Button>
-          <Button variant="link" size="xs" onClick={() => onEdit(env)}>
-            [EDIT]
-          </Button>
-          <Button variant="link" size="xs" onClick={() => onDuplicate(env.id)}>
-            [DUPLICATE]
-          </Button>
-          <Button variant="danger" onClick={() => onDelete(env.id)}>
-            [DELETE]
-          </Button>
+      )}
+
+      <CardHeader className="pt-8">
+        <div className="space-y-4 w-full">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div
+                className="w-3 h-3 cursor-pointer ring-1 ring-ink/20 hover:ring-ink transition-all"
+                style={{ backgroundColor: env.color || 'gray' }}
+                title="Click to change color"
+                onClick={() => document.getElementById(`color-input-${env.id}`)?.click()}
+              ></div>
+              <input
+                id={`color-input-${env.id}`}
+                type="color"
+                className="absolute opacity-0 pointer-events-none w-0 h-0"
+                value={env.color || '#808080'}
+                onChange={(e) => onUpdate(env.id, { color: e.target.value })}
+              />
+            </div>
+            <div>
+              <Typography variant="h2" className="leading-none">
+                {env.name}
+              </Typography>
+              <Typography variant="label" className="mt-1 lowercase block opacity-60">
+                {env.url}
+              </Typography>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 border-t border-hairline/50">
+            {!env.is_default && (
+              <Button
+                variant="link"
+                size="xs"
+                onClick={() => onSetDefault(env.id)}
+                className="text-success p-0 h-auto flex items-center gap-1"
+              >
+                <Star size={10} />
+                [SET_DEFAULT]
+              </Button>
+            )}
+            <Button
+              variant="link"
+              size="xs"
+              onClick={() => onTest(env.id)}
+              disabled={testingEnvId === env.id}
+              className="p-0 h-auto disabled:opacity-50"
+            >
+              {testingEnvId === env.id ? 'TESTING...' : '[TEST_CONNECTION]'}
+            </Button>
+            <Button variant="link" size="xs" onClick={() => onEdit(env)} className="p-0 h-auto">
+              [EDIT]
+            </Button>
+            <Button
+              variant="link"
+              size="xs"
+              onClick={() => onDuplicate(env.id)}
+              className="p-0 h-auto"
+            >
+              [DUPLICATE]
+            </Button>
+            <Button variant="danger" size="xs" onClick={() => onDelete(env.id)} className="ml-auto">
+              [DELETE]
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
-      <CardBody>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-canvas p-4">
-            <Typography variant="label" className="mb-1 block">
+      <CardBody className="border-t border-hairline/50">
+        <div className="grid grid-cols-2 gap-8 py-2">
+          <div>
+            <Typography
+              variant="label"
+              className="mb-1 block opacity-50 text-[9px] uppercase tracking-tighter"
+            >
               Database
             </Typography>
-            <Typography variant="h3">{env.db}</Typography>
+            <Typography variant="h3" className="text-sm font-bold tracking-tight">
+              {env.db}
+            </Typography>
           </div>
-          <div className="bg-canvas p-4">
-            <Typography variant="label" className="mb-1 block">
+          <div>
+            <Typography
+              variant="label"
+              className="mb-1 block opacity-50 text-[9px] uppercase tracking-tighter"
+            >
               User
             </Typography>
-            <Typography variant="body" className="font-bold">
+            <Typography variant="body" className="text-sm font-bold truncate" title={env.username}>
               {env.username}
             </Typography>
           </div>

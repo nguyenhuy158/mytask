@@ -30,6 +30,10 @@ export class AxiosOdooRepository implements IOdooRepository {
     return res.data
   }
 
+  async setDefaultEnv(id: number): Promise<void> {
+    await axios.post(`${API_BASE}/envs/${id}/set-default`)
+  }
+
   async testEnv(id: number): Promise<{ status: string; message?: string }> {
     const res = await axios.get(`${API_BASE}/odoo/${id}/test`)
     return res.data

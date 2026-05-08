@@ -98,6 +98,15 @@ class PrismaAdapter(RepositoryPort):
     async def update_odoo_env(self, env_id: int, data: dict) -> Any:
         return await db.odooenv.update(where={"id": env_id}, data=data)
 
+    async def set_odoo_env_default(self, env_id: int) -> None:
+        await db.odooenv.update_many(
+            where={"is_default": True}, data={"is_default": False}
+        )
+        await db.odooenv.update(where={"id": env_id}, data={"is_default": True})
+
+    async def get_default_odoo_env(self) -> Any | None:
+        return await db.odooenv.find_first(where={"is_default": True})
+
     async def update_task_timer(
         self,
         task_id: int,

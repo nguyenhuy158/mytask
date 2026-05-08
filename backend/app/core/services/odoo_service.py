@@ -43,6 +43,19 @@ class OdooService:
     async def update_env(self, env_id: int, data: dict) -> Any:
         return await self.repository.update_odoo_env(env_id, data)
 
+    async def set_default_env(self, env_id: int) -> None:
+        await self.repository.set_odoo_env_default(env_id)
+
+    async def get_effective_env(self, env_id: int | None = None) -> Any:
+        if env_id:
+            env = await self.repository.get_odoo_env_by_id(env_id)
+        else:
+            env = await self.repository.get_default_odoo_env()
+
+        if not env:
+            raise Exception("Environment not found or no default set")
+        return env
+
     async def test_connection(self, env_id: int) -> bool:
         env = await self.repository.get_odoo_env_by_id(env_id)
         if not env:

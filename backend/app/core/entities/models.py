@@ -46,6 +46,7 @@ class OdooEnvSchema(BaseModel):
     username: str
     password: str
     color: str | None = "gray"
+    is_default: bool | None = False
 
 
 class WebhookConfigSchema(BaseModel):

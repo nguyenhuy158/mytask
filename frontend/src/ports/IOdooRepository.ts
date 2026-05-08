@@ -7,6 +7,7 @@ export interface IOdooRepository {
   updateEnv(id: number, data: Partial<OdooEnv>): Promise<OdooEnv>
   deleteEnv(id: number): Promise<void>
   duplicateEnv(id: number): Promise<OdooEnv>
+  setDefaultEnv(id: number): Promise<void>
   testEnv(id: number): Promise<{ status: string; message?: string }>
   testConnection(env: Partial<OdooEnv>): Promise<{ status: string; message?: string }>
   getCrons(envId: number): Promise<Cron[]>

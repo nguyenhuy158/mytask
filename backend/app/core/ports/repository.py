@@ -109,6 +109,14 @@ class RepositoryPort(ABC):
         pass
 
     @abstractmethod
+    async def set_odoo_env_default(self, env_id: int) -> None:
+        pass
+
+    @abstractmethod
+    async def get_default_odoo_env(self) -> Any | None:
+        pass
+
+    @abstractmethod
     async def update_task_timer(
         self,
         task_id: int,

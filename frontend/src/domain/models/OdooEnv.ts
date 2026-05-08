@@ -6,6 +6,7 @@ export interface OdooEnv {
   username: string
   password?: string
   color?: string
+  is_default?: boolean
 }
 
 export interface DisbursementReport {

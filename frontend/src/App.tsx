@@ -143,6 +143,7 @@ function App() {
     updateEnv,
     deleteEnv,
     duplicateEnv,
+    setDefaultEnv,
     testEnv,
     exportEnvs,
     importEnvs,
@@ -279,6 +280,10 @@ function App() {
     } finally {
       setTestingEnvId(null)
     }
+  }
+
+  const handleSetDefaultEnv = async (id: number) => {
+    await setDefaultEnv(id)
   }
 
   const handleDeleteEnv = async (id: number) => {
@@ -485,6 +490,7 @@ function App() {
                     onEdit={setEditingEnv}
                     onDelete={handleDeleteEnv}
                     onDuplicate={duplicateEnv}
+                    onSetDefault={handleSetDefaultEnv}
                   />
                 ))}
               </div>

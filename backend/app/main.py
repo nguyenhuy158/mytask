@@ -231,7 +231,9 @@ async def odoo_shell(
     env_id: int, data: dict, service: OdooService = Depends(get_odoo_service)
 ):
     script = data.get("script", "")
-    return await service.execute_remote_shell(env_id, script)
+    target_id = env_id if env_id > 0 else None
+    env = await service.get_effective_env(target_id)
+    return await service.execute_remote_shell(env.id, script)
 
 
 @app.post("/system/logs/stream")
@@ -378,7 +380,10 @@ async def test_odoo_env(env_id: int, service: OdooService = Depends(get_odoo_ser
 @app.get("/odoo/{env_id}/crons")
 async def get_odoo_crons(env_id: int, service: OdooService = Depends(get_odoo_service)):
     try:
-        return await service.get_crons(env_id)
+        # If env_id is 0, use default
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        return await service.get_crons(env.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
@@ -388,7 +393,9 @@ async def get_odoo_disbursement_report(
     env_id: int, service: OdooService = Depends(get_odoo_service)
 ):
     try:
-        return await service.get_disbursement_report(env_id)
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        return await service.get_disbursement_report(env.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
@@ -401,7 +408,9 @@ async def toggle_odoo_cron(
     service: OdooService = Depends(get_odoo_service),
 ):
     try:
-        await service.toggle_cron(env_id, cron_id, active)
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        await service.toggle_cron(env.id, cron_id, active)
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -412,7 +421,9 @@ async def run_odoo_cron(
     env_id: int, cron_id: int, service: OdooService = Depends(get_odoo_service)
 ):
     try:
-        await service.run_cron(env_id, cron_id)
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        await service.run_cron(env.id, cron_id)
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -572,6 +583,12 @@ async def update_env(
 @app.post("/envs/{id}/duplicate")
 async def duplicate_env(id: int, service: OdooService = Depends(get_odoo_service)):
     return await service.duplicate_env(id)
+
+
+@app.post("/envs/{id}/set-default")
+async def set_default_env(id: int, service: OdooService = Depends(get_odoo_service)):
+    await service.set_default_env(id)
+    return {"status": "success"}
 
 
 @app.delete("/envs/{id}")

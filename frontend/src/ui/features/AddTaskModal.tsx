@@ -20,7 +20,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
     estimated_time: 60,
     deadline: '',
     dependencies: '',
-    odoo_env_id: null as number | null,
+    odoo_env_id: (envs.find((e) => e.is_default)?.id || null) as number | null,
     odoo_project_id: null as number | null,
     odoo_task_id: null as number | null,
   })

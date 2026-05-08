@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useMemo } from 'react'
 import { ArrowUp, ArrowDown, Play, Power, PowerOff } from 'lucide-react'
 import type { Cron } from '../../domain/models/Cron'
 import {
@@ -8,6 +8,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Pagination,
 } from '../components/Table'
 import { Button } from '../components/Button'
 import { Spinner } from '../components/Spinner'
@@ -31,10 +32,20 @@ export const CronTable: React.FC<CronTableProps> = ({
   onRun,
   selectedIndex = -1,
 }) => {
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null
     return sortConfig.direction === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />
   }
+
+  const paginatedCrons = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    return crons.slice(startIndex, startIndex + pageSize)
+  }, [crons, currentPage])
+
+  const totalPages = Math.ceil(crons.length / pageSize)
 
   if (loading) {
     return (
@@ -45,76 +56,89 @@ export const CronTable: React.FC<CronTableProps> = ({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableHeaderCell onClick={() => onRequestSort('name')}>
-          <div className="flex items-center gap-2">Name {getSortIcon('name')}</div>
-        </TableHeaderCell>
-        <TableHeaderCell onClick={() => onRequestSort('model')}>
-          <div className="flex items-center gap-2">Model {getSortIcon('model')}</div>
-        </TableHeaderCell>
-        <TableHeaderCell onClick={() => onRequestSort('interval')}>
-          <div className="flex items-center gap-2">Interval {getSortIcon('interval')}</div>
-        </TableHeaderCell>
-        <TableHeaderCell onClick={() => onRequestSort('nextcall')}>
-          <div className="flex items-center gap-2">Next Call {getSortIcon('nextcall')}</div>
-        </TableHeaderCell>
-        <TableHeaderCell onClick={() => onRequestSort('active')}>
-          <div className="flex items-center gap-2">Status {getSortIcon('active')}</div>
-        </TableHeaderCell>
-        <TableHeaderCell align="right">Actions</TableHeaderCell>
-      </TableHeader>
-      <TableBody>
-        {crons.map((cron, idx) => (
-          <TableRow key={cron.id} className={idx === selectedIndex ? 'bg-primary/5' : ''}>
-            <TableCell className="font-bold uppercase">
-              {idx === selectedIndex && <span className="mr-2">»</span>}
-              {cron.name}
-            </TableCell>
-            <TableCell className="text-[10px] font-bold text-ash uppercase">{cron.model}</TableCell>
-            <TableCell className="text-mute font-bold">
-              EVERY {cron.interval_number} {cron.interval_type?.toUpperCase() || ''}
-            </TableCell>
-            <TableCell className="font-bold text-[11px] text-ash tabular-nums">
-              {cron.nextcall}
-            </TableCell>
-            <TableCell>
-              <span className={`font-bold ${cron.active ? 'text-success' : 'text-danger'}`}>
-                {cron.active ? '[ACTIVE]' : '[INACTIVE]'}
-              </span>
-            </TableCell>
-            <TableCell align="right">
-              <div className="flex items-center justify-end gap-4">
-                <Button
-                  variant={cron.active ? 'danger' : 'success'}
-                  onClick={() => onToggle(cron.id, !cron.active)}
-                  icon={cron.active ? <PowerOff size={12} /> : <Power size={12} />}
-                >
-                  {cron.active ? 'DISABLE' : 'ENABLE'}
-                </Button>
-                <Button
-                  variant="underline"
-                  onClick={() => onRun(cron.id)}
-                  icon={<Play size={12} />}
-                >
-                  TRIGGER
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-        {crons.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-12">
-              <div className="flex flex-col items-center gap-2 text-mute">
-                <span className="text-[10px] font-bold uppercase tracking-widest">
-                  NO_CRONS_FOUND_OR_CONNECTION_FAILED
-                </span>
-              </div>
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table>
+        <TableHeader>
+          <TableHeaderCell onClick={() => onRequestSort('name')}>
+            <div className="flex items-center gap-2">Name {getSortIcon('name')}</div>
+          </TableHeaderCell>
+          <TableHeaderCell onClick={() => onRequestSort('model')}>
+            <div className="flex items-center gap-2">Model {getSortIcon('model')}</div>
+          </TableHeaderCell>
+          <TableHeaderCell onClick={() => onRequestSort('interval')}>
+            <div className="flex items-center gap-2">Interval {getSortIcon('interval')}</div>
+          </TableHeaderCell>
+          <TableHeaderCell onClick={() => onRequestSort('nextcall')}>
+            <div className="flex items-center gap-2">Next Call {getSortIcon('nextcall')}</div>
+          </TableHeaderCell>
+          <TableHeaderCell onClick={() => onRequestSort('active')}>
+            <div className="flex items-center gap-2">Status {getSortIcon('active')}</div>
+          </TableHeaderCell>
+          <TableHeaderCell align="right">Actions</TableHeaderCell>
+        </TableHeader>
+        <TableBody>
+          {paginatedCrons.map((cron, idx) => {
+            const globalIdx = (currentPage - 1) * pageSize + idx
+            return (
+              <TableRow key={cron.id} className={globalIdx === selectedIndex ? 'bg-primary/5' : ''}>
+                <TableCell className="font-bold uppercase">
+                  {globalIdx === selectedIndex && <span className="mr-2">»</span>}
+                  {cron.name}
+                </TableCell>
+                <TableCell className="text-[10px] font-bold text-ash uppercase">
+                  {cron.model}
+                </TableCell>
+                <TableCell className="text-mute font-bold">
+                  EVERY {cron.interval_number} {cron.interval_type?.toUpperCase() || ''}
+                </TableCell>
+                <TableCell className="font-bold text-[11px] text-ash tabular-nums">
+                  {cron.nextcall}
+                </TableCell>
+                <TableCell>
+                  <span className={`font-bold ${cron.active ? 'text-success' : 'text-danger'}`}>
+                    {cron.active ? '[ACTIVE]' : '[INACTIVE]'}
+                  </span>
+                </TableCell>
+                <TableCell align="right">
+                  <div className="flex items-center justify-end gap-4">
+                    <Button
+                      variant={cron.active ? 'danger' : 'success'}
+                      onClick={() => onToggle(cron.id, !cron.active)}
+                      icon={cron.active ? <PowerOff size={12} /> : <Power size={12} />}
+                    >
+                      {cron.active ? 'DISABLE' : 'ENABLE'}
+                    </Button>
+                    <Button
+                      variant="underline"
+                      onClick={() => onRun(cron.id)}
+                      icon={<Play size={12} />}
+                    >
+                      TRIGGER
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+          {crons.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-12">
+                <div className="flex flex-col items-center gap-2 text-mute">
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                    NO_CRONS_FOUND_OR_CONNECTION_FAILED
+                  </span>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        className="px-4"
+      />
+    </>
   )
 }

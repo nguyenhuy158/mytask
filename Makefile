@@ -69,6 +69,8 @@ dev-local:
 lint:
 	@echo "Linting backend..."
 	cd backend && uv run ruff check .
+	@echo "Type-checking frontend..."
+	cd frontend && pnpm type-check
 	@echo "Linting frontend..."
 	cd frontend && pnpm lint
 

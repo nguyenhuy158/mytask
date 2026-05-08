@@ -340,15 +340,19 @@ function App() {
           }}
         />
 
-        <div className="flex-1 overflow-y-auto p-12">
+        <div className="flex-1 overflow-y-auto p-4 md:p-12">
           {activeTab === 'tasks' && (
             <div className="space-y-8 max-w-7xl mx-auto">
-              <div className="border-b border-ink pb-4 flex items-end justify-between">
+              <div className="border-b border-ink pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight uppercase">Dashboard</h1>
-                  <p className="text-mute text-xs mt-2 italic">Executing automated tasks...</p>
+                  <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase">
+                    Dashboard
+                  </h1>
+                  <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
+                    Executing automated tasks...
+                  </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={fetchRankedTasks}
                     className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
@@ -393,17 +397,19 @@ function App() {
 
           {activeTab === 'crons' && (
             <div className="space-y-8">
-              <div className="flex items-end justify-between border-b border-ink pb-4">
+              <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-ink pb-4 gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold uppercase">Scheduled Jobs</h1>
-                  <p className="text-mute text-xs mt-2 italic">Odoo XML-RPC Automation</p>
+                  <h1 className="text-xl md:text-2xl font-bold uppercase">Scheduled Jobs</h1>
+                  <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
+                    Odoo XML-RPC Automation
+                  </p>
                 </div>
                 <Select
                   value={selectedEnvId || ''}
                   options={envs.map((env) => ({ value: env.id, label: env.name }))}
                   onChange={(val) => setSelectedEnvId(Number(val))}
                   placeholder="Select Environment"
-                  className="w-48"
+                  className="w-full md:w-48"
                 />
               </div>
 
@@ -733,7 +739,7 @@ function App() {
         }}
       />
 
-      <div className="fixed bottom-10 right-10 flex flex-col items-end gap-4 z-50 pointer-events-none">
+      <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">
         <Draggable className="pointer-events-auto">
           <PomodoroTimer />
         </Draggable>

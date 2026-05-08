@@ -37,7 +37,7 @@ export const TableHeaderCell: React.FC<TableHeaderCellProps> = ({
 }) => (
   <th
     onClick={onClick}
-    className={`px-6 py-3 text-[10px] font-bold text-mute uppercase tracking-widest transition-colors ${
+    className={`px-3 md:px-6 py-3 text-[10px] font-bold text-mute uppercase tracking-widest transition-colors ${
       onClick ? 'cursor-pointer hover:text-ink' : ''
     } ${align === 'right' ? 'text-right' : ''} ${className}`}
   >
@@ -56,7 +56,9 @@ export const TableCell: React.FC<TableCellProps> = ({
   className = '',
   align = 'left',
 }) => (
-  <td className={`px-6 py-4 ${align === 'right' ? 'text-right' : ''} ${className}`}>{children}</td>
+  <td className={`px-3 md:px-6 py-3 md:py-4 ${align === 'right' ? 'text-right' : ''} ${className}`}>
+    {children}
+  </td>
 )
 
 export const TableRow: React.FC<{ children: React.ReactNode; className?: string }> = ({

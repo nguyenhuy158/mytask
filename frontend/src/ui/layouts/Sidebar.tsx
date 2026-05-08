@@ -55,16 +55,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isVertical = position === 'left' || position === 'right'
 
   const asideClasses = {
-    left: 'w-64 border-r flex-col',
-    right: 'w-64 border-l flex-col',
+    left: 'w-16 md:w-64 border-r flex-col',
+    right: 'w-16 md:w-64 border-l flex-col',
     top: 'w-full h-auto border-b flex-row items-center justify-between',
     bottom: 'w-full h-auto border-t flex-row items-center justify-between',
   }[position]
 
   return (
     <aside className={`${asideClasses} border-hairline bg-canvas z-20`}>
-      <div className={`${isVertical ? 'p-6 border-b' : 'px-8 py-4 border-r'} border-hairline`}>
-        <div className="text-xl font-bold tracking-tight">{t('sidebar.app_name')}</div>
+      <div
+        className={`${isVertical ? 'p-4 md:p-6 border-b' : 'px-8 py-4 border-r'} border-hairline`}
+      >
+        <div className="text-lg md:text-xl font-bold tracking-tight text-center md:text-left truncate">
+          {isVertical ? (
+            <>
+              <span className="md:hidden">MT</span>
+              <span className="hidden md:inline">{t('sidebar.app_name')}</span>
+            </>
+          ) : (
+            t('sidebar.app_name')
+          )}
+        </div>
         {isVertical && (
           <div className="text-[10px] mt-1 text-mute uppercase tracking-widest">
             {t('sidebar.task_manager')}
@@ -90,17 +101,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Icon size={16} className={activeTab === tab.id ? 'text-canvas' : 'text-ash'} />
-              <span className="text-sm">{tab.label}</span>
+              <span className="text-sm hidden md:inline">{tab.label}</span>
             </button>
           )
         })}
       </nav>
 
       <div
-        className={`${isVertical ? 'p-6 border-t' : 'px-8 py-4 border-l'} border-hairline text-xs flex ${isVertical ? 'flex-col' : 'flex-row items-center gap-8'}`}
+        className={`${isVertical ? 'p-4 md:p-6 border-t' : 'px-4 md:px-8 py-4 border-l'} border-hairline text-xs flex ${isVertical ? 'flex-col items-center md:items-start' : 'flex-row items-center gap-4 md:gap-8'}`}
       >
         {isVertical && (
-          <div className="text-[10px] font-bold text-mute uppercase tracking-widest mb-2">
+          <div className="text-[10px] font-bold text-mute uppercase tracking-widest mb-2 hidden md:block">
             {t('sidebar.status')}
           </div>
         )}
@@ -110,13 +121,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               wsConnected ? 'bg-success animate-pulse' : 'bg-danger'
             }`}
           ></div>
-          <span className="font-bold">
+          <span className="font-bold hidden md:inline">
             {wsConnected ? t('sidebar.live_sync_active') : t('sidebar.offline')}
           </span>
         </div>
 
-        <div className={`flex ${isVertical ? 'mt-4 flex-col gap-4' : 'flex-row gap-6'}`}>
-          <div className="flex items-center justify-between gap-4">
+        <div className={`flex ${isVertical ? 'mt-4 flex-col gap-4' : 'flex-row gap-4 md:gap-6'}`}>
+          <div
+            className={`flex items-center justify-between gap-4 ${isVertical ? 'hidden md:flex' : ''}`}
+          >
             <span className="text-ash font-bold uppercase tracking-widest text-[9px]">Pos</span>
             <div className="flex gap-2">
               {(['left', 'right', 'top', 'bottom'] as const).map((pos) => (

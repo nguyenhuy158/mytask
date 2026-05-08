@@ -12,8 +12,8 @@ export const Typography: React.FC<TypographyProps> = ({
   className = '',
 }) => {
   const styles = {
-    h1: 'text-2xl font-bold uppercase tracking-tight',
-    h2: 'text-lg font-bold uppercase',
+    h1: 'text-xl md:text-2xl font-bold uppercase tracking-tight',
+    h2: 'text-base md:text-lg font-bold uppercase',
     h3: 'text-sm font-bold uppercase tracking-widest',
     body: 'text-xs',
     caption: 'text-[10px] text-mute italic',

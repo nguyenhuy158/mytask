@@ -2,25 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { systemRepository } from '../../adapters/api/AxiosSystemRepository'
 import type { Webhook } from '../../domain/models/Webhook'
 import type { S3Config, S3Backup } from '../../domain/models/S3'
-import type { AuditLog, LocalBackup } from '../../domain/models/System'
+import type {
+  AuditLog,
+  LocalBackup,
+  SystemConfig,
+  SchedulerHealth,
+} from '../../domain/models/System'
 import toast from 'react-hot-toast'
-
-interface SystemConfig {
-  content: string
-  path: string
-}
-
-interface SchedulerJob {
-  id: number
-  name: string
-  next_run: string | null
-}
-
-interface SchedulerHealth {
-  status: string
-  job_count: number
-  jobs: SchedulerJob[]
-}
 
 export const useSystem = () => {
   const [webhooks, setWebhooks] = useState<Webhook[]>([])

@@ -93,16 +93,22 @@ export const CronTable: React.FC<CronTableProps> = ({
           <TableHeaderCell onClick={() => onRequestSort('name')}>
             <div className="flex items-center gap-2">Name {getSortIcon('name')}</div>
           </TableHeaderCell>
-          <TableHeaderCell onClick={() => onRequestSort('model')}>
+          <TableHeaderCell onClick={() => onRequestSort('model')} className="hidden sm:table-cell">
             <div className="flex items-center gap-2">Model {getSortIcon('model')}</div>
           </TableHeaderCell>
-          <TableHeaderCell onClick={() => onRequestSort('interval')}>
+          <TableHeaderCell
+            onClick={() => onRequestSort('interval')}
+            className="hidden md:table-cell"
+          >
             <div className="flex items-center gap-2">Interval {getSortIcon('interval')}</div>
           </TableHeaderCell>
-          <TableHeaderCell onClick={() => onRequestSort('nextcall')}>
+          <TableHeaderCell
+            onClick={() => onRequestSort('nextcall')}
+            className="hidden lg:table-cell"
+          >
             <div className="flex items-center gap-2">Next Call {getSortIcon('nextcall')}</div>
           </TableHeaderCell>
-          <TableHeaderCell onClick={() => onRequestSort('active')}>
+          <TableHeaderCell onClick={() => onRequestSort('active')} className="hidden sm:table-cell">
             <div className="flex items-center gap-2">Status {getSortIcon('active')}</div>
           </TableHeaderCell>
           <TableHeaderCell align="right">Actions</TableHeaderCell>
@@ -112,28 +118,29 @@ export const CronTable: React.FC<CronTableProps> = ({
             const globalIdx = (currentPage - 1) * pageSize + idx
             return (
               <TableRow key={cron.id} className={globalIdx === selectedIndex ? 'bg-primary/5' : ''}>
-                <TableCell className="font-bold uppercase">
+                <TableCell className="font-bold uppercase min-w-[200px]">
                   {globalIdx === selectedIndex && <span className="mr-2">»</span>}
                   {cron.name}
                 </TableCell>
-                <TableCell className="text-[10px] font-bold text-ash uppercase">
+                <TableCell className="text-[10px] font-bold text-ash uppercase hidden sm:table-cell">
                   {cron.model}
                 </TableCell>
-                <TableCell className="text-mute font-bold">
+                <TableCell className="text-mute font-bold hidden md:table-cell">
                   EVERY {cron.interval_number} {cron.interval_type?.toUpperCase() || ''}
                 </TableCell>
-                <TableCell className="font-bold text-[11px] text-ash tabular-nums">
+                <TableCell className="font-bold text-[11px] text-ash tabular-nums hidden lg:table-cell">
                   {cron.nextcall}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <span className={`font-bold ${cron.active ? 'text-success' : 'text-danger'}`}>
                     {cron.active ? '[ACTIVE]' : '[INACTIVE]'}
                   </span>
                 </TableCell>
                 <TableCell align="right">
-                  <div className="flex items-center justify-end gap-4">
+                  <div className="flex items-center justify-end gap-2 md:gap-4 flex-wrap">
                     <Button
                       variant={cron.active ? 'danger' : 'success'}
+                      size="xs"
                       onClick={() => onToggle(cron.id, !cron.active)}
                       icon={cron.active ? <PowerOff size={12} /> : <Power size={12} />}
                     >
@@ -141,6 +148,7 @@ export const CronTable: React.FC<CronTableProps> = ({
                     </Button>
                     <Button
                       variant="underline"
+                      size="xs"
                       onClick={() => onRun(cron.id)}
                       icon={<Play size={12} />}
                     >

@@ -55,7 +55,7 @@ export const PomodoroTimer = () => {
 
   return (
     <div
-      className={`border border-ink bg-canvas text-ink font-mono transition-all duration-300 ${isCollapsed ? 'p-2 w-32' : 'p-4 w-64'}`}
+      className={`border border-ink bg-canvas text-ink font-mono transition-all duration-300 relative z-[100] ${isCollapsed ? 'p-2 w-28 md:w-32' : 'p-4 w-[calc(100vw-2rem)] md:w-64'}`}
     >
       <div className="text-[10px] uppercase font-bold mb-2 opacity-50 flex justify-between items-center cursor-move">
         <span>Pomodoro [{mode}]</span>

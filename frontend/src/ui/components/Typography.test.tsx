@@ -11,7 +11,7 @@ describe('Typography Component', () => {
 
   it('applies correct variant styles', () => {
     const { container } = render(<Typography variant="h1">Heading</Typography>)
-    expect(container.firstChild).toHaveClass('text-2xl')
+    expect(container.firstChild).toHaveClass('md:text-2xl')
     expect(container.firstChild).toHaveClass('font-bold')
   })
 

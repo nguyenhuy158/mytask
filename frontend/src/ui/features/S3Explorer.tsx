@@ -69,11 +69,11 @@ export const S3Explorer = () => {
   }
 
   return (
-    <div className="flex h-[600px] border border-ink bg-canvas font-mono overflow-hidden">
+    <div className="flex flex-col sm:flex-row h-[800px] sm:h-[600px] border border-ink bg-canvas font-mono overflow-hidden">
       {showAddModal && <AddS3Modal onClose={() => setShowAddModal(false)} onAdd={handleAddS3} />}
 
       {/* Ranger Column 1: Buckets/Configs */}
-      <div className="w-1/3 border-r border-ink flex flex-col">
+      <div className="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-ink flex flex-col h-1/2 sm:h-auto">
         <div className="bg-ink text-on-primary px-4 py-2 text-[10px] font-bold uppercase flex justify-between items-center">
           <span>Buckets</span>
           <button

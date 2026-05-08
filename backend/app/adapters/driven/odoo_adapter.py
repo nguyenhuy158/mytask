@@ -123,24 +123,29 @@ class OdooAdapter(OdooPort):
 
         try:
             models, uid = self._get_models(url, db, username, password)
-            records = models.execute_kw(
-                db,
-                uid,
-                password,
-                "sale.disbursement",
-                "search_read",
-                [[["confirm_date", "!=", False], ["approve_date", "!=", False]]],
-                {
-                    "fields": [
-                        "id",
-                        "name",
-                        "kind",
-                        "confirm_date",
-                        "approve_date",
-                        "approve_uid",
-                    ]
-                },
-            )
+            try:
+                records = models.execute_kw(
+                    db,
+                    uid,
+                    password,
+                    "sale.disbursement",
+                    "search_read",
+                    [[["confirm_date", "!=", False], ["approve_date", "!=", False]]],
+                    {
+                        "fields": [
+                            "id",
+                            "name",
+                            "kind",
+                            "confirm_date",
+                            "approve_date",
+                            "approve_uid",
+                        ]
+                    },
+                )
+            except Exception as e:
+                if "Object sale.disbursement doesn't exist" in str(e):
+                    return []
+                raise e
 
             for rec in records:
                 # Project info is not directly on sale.disbursement

@@ -91,6 +91,11 @@ rounded:
   sm: 4px
   full: 9999px
 
+breakpoints:
+  mobile: 0px
+  tablet: 640px
+  desktop: 1024px
+
 spacing:
   xxs: 1px
   xs: 4px
@@ -238,3 +243,10 @@ The semantic palette is unusual for a brand-marketing site: it ships the full Ap
 - ASCII bracket markers (`[+]`, `[-]`, `[x]`) used as bullet glyphs in feature lists and FAQ rows
 - Block-pixel ASCII wordmark in the primary nav and inside the hero TUI — the brand identity is its own ASCII art
 - 96px `{spacing.section}` rhythm between every section, with no decorative dividers; only thin 1px `{colors.hairline}` rules separate content blocks
+
+**Mobile Optimization Rules:**
+- **Typography Scale:** On mobile (< 640px), reduce `display-xl` to 24px and `heading-md` to 14px to maintain readability without excessive wrapping.
+- **Padding/Spacing:** Reduce horizontal padding from `xl` (24px) to `md` (12px) on mobile to maximize content area.
+- **Touch Targets:** Ensure interactive elements (buttons, tabs) maintain at least 44px height or provide enough visual clearance to prevent mis-taps, even while maintaining the 4px-radius aesthetic.
+- **Flex/Grid Layouts:** Stack vertical elements on mobile. Tables should either scroll horizontally or transform into list-cards.
+- **Overlays:** Floating widgets (like Pomodoro or Logs) should be collapsible or positioned to avoid obscuring primary navigation and content.

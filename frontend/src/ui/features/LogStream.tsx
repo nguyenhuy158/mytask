@@ -27,7 +27,7 @@ export const LogStream = () => {
 
   return (
     <div
-      className={`bg-ink text-on-primary font-mono transition-all duration-300 border border-ink flex flex-col ${isCollapsed ? 'h-8 w-64' : 'h-64 w-64'}`}
+      className={`bg-ink text-on-primary font-mono transition-all duration-300 border border-ink flex flex-col relative z-[100] ${isCollapsed ? 'h-8 w-48 md:w-64' : 'h-64 w-[calc(100vw-2rem)] md:w-64'}`}
     >
       <div className="text-[10px] uppercase font-bold p-2 flex justify-between items-center opacity-70 border-b border-white/10 cursor-move">
         <div className="flex items-center gap-2">

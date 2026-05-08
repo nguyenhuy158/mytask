@@ -30,7 +30,7 @@ export const OdooShell = ({ envId }: { envId: number }) => {
   }
 
   return (
-    <div className="border border-ink bg-canvas font-mono overflow-hidden flex flex-col h-[500px]">
+    <div className="border border-ink bg-canvas font-mono overflow-hidden flex flex-col h-[500px] sm:h-[600px]">
       <div className="bg-ink text-on-primary px-4 py-2 text-[10px] font-bold uppercase flex justify-between items-center">
         <span>Odoo Remote Shell</span>
         {loading && <span className="animate-pulse">EXECUTING...</span>}

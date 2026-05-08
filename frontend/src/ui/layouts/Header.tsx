@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNew,
 }) => {
   return (
-    <header className="h-14 border-b border-hairline flex items-center justify-between px-8 z-10">
+    <header className="h-14 border-b border-hairline flex items-center justify-between px-4 md:px-8 z-10">
       <div className="flex items-center gap-4 flex-1">
         <div className="relative w-full max-w-sm">
           <input
@@ -31,13 +31,26 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
-        <Button variant="link" size="xs" onClick={onRefresh} icon={<RefreshCcw size={12} />}>
+      <div className="flex items-center gap-2 md:gap-6">
+        <Button
+          variant="link"
+          size="xs"
+          onClick={onRefresh}
+          icon={<RefreshCcw size={12} />}
+          className="hidden sm:flex"
+        >
           [REFRESH]
         </Button>
+        <Button
+          variant="link"
+          size="xs"
+          onClick={onRefresh}
+          icon={<RefreshCcw size={12} />}
+          className="sm:hidden"
+        />
         {activeTab !== 'config' && (
           <Button variant="primary" size="sm" onClick={onNew} icon={<Plus size={14} />}>
-            NEW_
+            <span className="hidden sm:inline">NEW_</span>
             {activeTab === 'envs'
               ? 'ENV'
               : activeTab === 'webhooks'

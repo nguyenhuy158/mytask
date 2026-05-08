@@ -28,11 +28,23 @@ class BackupService:
         config = await self.repository.get_system_config("default_backup_target")
         if config and config.value.startswith("s3:"):
             try:
-                s3_id = int(config.value.split(":")[1])
+                target_parts = config.value.split(":")
+                if len(target_parts) < 2:
+                    logger.warning(f"Invalid S3 backup target format: {config.value}")
+                    return local_result
+
+                s3_id_str = target_parts[1]
+                if not s3_id_str.isdigit():
+                    logger.warning(f"S3 backup target ID is not a digit: {s3_id_str}")
+                    return local_result
+
+                s3_id = int(s3_id_str)
                 s3_config = await self.repository.get_s3_config_by_id(s3_id)
                 if s3_config:
                     s3_result = self.storage.upload_backup(s3_config, local_path)
                     logger.info(f"S3 backup: {s3_result}")
+                else:
+                    logger.error(f"S3 configuration with ID {s3_id} not found")
             except Exception as e:
                 logger.error(f"Failed to upload scheduled backup to S3: {e}")
 

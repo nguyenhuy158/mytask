@@ -600,7 +600,7 @@ function App() {
                       options={[
                         { value: 'local', label: 'LOCAL_DB' },
                         ...s3Configs.map((c) => ({
-                          value: `s3:${c.name}`,
+                          value: `s3:${c.id}`,
                           label: `S3: ${c.name.toUpperCase()}`,
                         })),
                       ]}

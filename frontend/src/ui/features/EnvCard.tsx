@@ -1,5 +1,5 @@
 import React from 'react'
-import { Star } from 'lucide-react'
+import { Star, Activity, Edit3, Copy, Trash2, Server } from 'lucide-react'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Card, CardHeader, CardBody } from '../components/Card'
 import { Button } from '../components/Button'
@@ -54,9 +54,12 @@ export const EnvCard: React.FC<EnvCardProps> = ({
               />
             </div>
             <div>
-              <Typography variant="h2" className="leading-none">
-                {env.name}
-              </Typography>
+              <div className="flex items-center gap-2">
+                <Server size={14} className="text-ash" />
+                <Typography variant="h2" className="leading-none">
+                  {env.name}
+                </Typography>
+              </div>
               <Typography variant="label" className="mt-1 lowercase block opacity-60">
                 {env.url}
               </Typography>
@@ -69,9 +72,9 @@ export const EnvCard: React.FC<EnvCardProps> = ({
                 variant="link"
                 size="xs"
                 onClick={() => onSetDefault(env.id)}
-                className="text-success p-0 h-auto flex items-center gap-1"
+                className="text-success p-0 h-auto"
+                icon={<Star size={10} />}
               >
-                <Star size={10} />
                 [SET_DEFAULT]
               </Button>
             )}
@@ -81,10 +84,17 @@ export const EnvCard: React.FC<EnvCardProps> = ({
               onClick={() => onTest(env.id)}
               disabled={testingEnvId === env.id}
               className="p-0 h-auto disabled:opacity-50"
+              icon={<Activity size={10} />}
             >
               {testingEnvId === env.id ? 'TESTING...' : '[TEST_CONNECTION]'}
             </Button>
-            <Button variant="link" size="xs" onClick={() => onEdit(env)} className="p-0 h-auto">
+            <Button
+              variant="link"
+              size="xs"
+              onClick={() => onEdit(env)}
+              className="p-0 h-auto"
+              icon={<Edit3 size={10} />}
+            >
               [EDIT]
             </Button>
             <Button
@@ -92,10 +102,17 @@ export const EnvCard: React.FC<EnvCardProps> = ({
               size="xs"
               onClick={() => onDuplicate(env.id)}
               className="p-0 h-auto"
+              icon={<Copy size={10} />}
             >
               [DUPLICATE]
             </Button>
-            <Button variant="danger" size="xs" onClick={() => onDelete(env.id)} className="ml-auto">
+            <Button
+              variant="danger"
+              size="xs"
+              onClick={() => onDelete(env.id)}
+              className="ml-auto"
+              icon={<Trash2 size={10} />}
+            >
               [DELETE]
             </Button>
           </div>

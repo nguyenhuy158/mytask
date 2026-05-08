@@ -1,4 +1,5 @@
 import React from 'react'
+import { ArrowLeft, ArrowRight, Play } from 'lucide-react'
 import type { Task } from '../../domain/models/Task'
 import { TaskCard } from './TaskCard'
 import { CalendarView } from './CalendarView'
@@ -80,6 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         onClick={() =>
                           onUpdateStatus(task.id, status === 'done' ? 'doing' : 'todo')
                         }
+                        icon={<ArrowLeft size={10} />}
                       >
                         [BACK]
                       </Button>
@@ -91,6 +93,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         onClick={() =>
                           onUpdateStatus(task.id, status === 'todo' ? 'doing' : 'done')
                         }
+                        icon={<ArrowRight size={10} />}
                       >
                         [NEXT]
                       </Button>
@@ -100,6 +103,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       size="xs"
                       onClick={() => onRun(task.id)}
                       className="ml-auto text-accent hover:text-accent/80"
+                      icon={<Play size={10} />}
                     >
                       RUN
                     </Button>

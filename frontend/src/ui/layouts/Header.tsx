@@ -1,4 +1,6 @@
 import React from 'react'
+import { Plus, RefreshCcw } from 'lucide-react'
+import { Button } from '../components/Button'
 
 interface HeaderProps {
   activeTab: string
@@ -30,18 +32,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-6">
-        <button
-          onClick={onRefresh}
-          className="text-mute hover:text-ink transition-colors text-xs font-bold"
-        >
+        <Button variant="link" size="xs" onClick={onRefresh} icon={<RefreshCcw size={12} />}>
           [REFRESH]
-        </button>
+        </Button>
         {activeTab !== 'config' && (
-          <button
-            onClick={onNew}
-            className="bg-primary text-on-primary px-4 py-1.5 rounded-sm text-xs font-bold transition-all border border-ink hover:opacity-90"
-          >
-            [+] NEW_
+          <Button variant="primary" size="sm" onClick={onNew} icon={<Plus size={14} />}>
+            NEW_
             {activeTab === 'envs'
               ? 'ENV'
               : activeTab === 'webhooks'
@@ -53,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : activeTab === 'wiki'
                       ? 'PAGE'
                       : 'TASK'}
-          </button>
+          </Button>
         )}
       </div>
     </header>

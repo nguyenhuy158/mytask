@@ -1,5 +1,17 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  Layout,
+  Calendar,
+  FileText,
+  Globe,
+  Book,
+  Folder,
+  BarChart2,
+  Settings,
+  Archive,
+  Webhook,
+} from 'lucide-react'
 
 interface SidebarProps {
   activeTab: string
@@ -28,16 +40,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const tabs = [
-    { id: 'tasks', label: t('sidebar.task_manager') },
-    { id: 'crons', label: 'Cron Jobs' },
-    { id: 'reports', label: 'Reports' },
-    { id: 'envs', label: 'Environments' },
-    { id: 'wiki', label: 'Wiki' },
-    { id: 's3', label: 'S3 Explorer' },
-    { id: 'analytics', label: 'Analytics' },
-    { id: 'config', label: 'Config' },
-    { id: 'backups', label: 'Backups' },
-    { id: 'webhooks', label: 'Webhooks' },
+    { id: 'tasks', label: t('sidebar.task_manager'), icon: Layout },
+    { id: 'crons', label: 'Cron Jobs', icon: Calendar },
+    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'envs', label: 'Environments', icon: Globe },
+    { id: 'wiki', label: 'Wiki', icon: Book },
+    { id: 's3', label: 'S3 Explorer', icon: Folder },
+    { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+    { id: 'config', label: 'Config', icon: Settings },
+    { id: 'backups', label: 'Backups', icon: Archive },
+    { id: 'webhooks', label: 'Webhooks', icon: Webhook },
   ]
 
   const isVertical = position === 'left' || position === 'right'
@@ -63,23 +75,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav
         className={`flex-1 ${isVertical ? 'px-4 py-6 space-y-2' : 'px-6 flex flex-row gap-4 overflow-x-auto scrollbar-hide'}`}
       >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`${
-              isVertical ? 'w-full' : 'whitespace-nowrap'
-            } flex items-center gap-3 px-4 py-2 rounded-sm transition-all duration-200 ${
-              activeTab === tab.id
-                ? 'bg-primary text-on-primary'
-                : 'hover:bg-surface-soft text-mute'
-            }`}
-          >
-            <span className="text-sm">
-              {activeTab === tab.id ? '[x]' : '[ ]'} {tab.label}
-            </span>
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`${
+                isVertical ? 'w-full' : 'whitespace-nowrap'
+              } flex items-center gap-3 px-4 py-2 rounded-sm transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-primary text-on-primary'
+                  : 'hover:bg-surface-soft text-mute'
+              }`}
+            >
+              <Icon size={16} className={activeTab === tab.id ? 'text-canvas' : 'text-ash'} />
+              <span className="text-sm">{tab.label}</span>
+            </button>
+          )
+        })}
       </nav>
 
       <div

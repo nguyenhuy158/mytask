@@ -4,6 +4,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'outline' | 'underline' | 'ghost' | 'danger' | 'success' | 'link'
   size?: 'xs' | 'sm' | 'md'
   fullWidth?: boolean
+  icon?: React.ReactNode
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -11,6 +12,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   fullWidth = false,
+  icon,
   className = '',
   ...props
 }) => {
@@ -47,7 +49,10 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button className={finalStyles} {...props}>
-      {children}
+      <div className="flex items-center justify-center gap-2">
+        {icon && <span className="flex-shrink-0">{icon}</span>}
+        {children}
+      </div>
     </button>
   )
 }

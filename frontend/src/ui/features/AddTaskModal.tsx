@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Plus, X } from 'lucide-react'
 import type { Task } from '../../domain/models/Task'
 import type { OdooEnv } from '../../domain/models/OdooEnv'
 import { Button } from '../components/Button'
@@ -194,10 +195,10 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onAdd, task
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" fullWidth>
+            <Button type="submit" fullWidth icon={<Plus size={16} />}>
               [CREATE_TASK]
             </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} icon={<X size={16} />}>
               [CANCEL]
             </Button>
           </div>

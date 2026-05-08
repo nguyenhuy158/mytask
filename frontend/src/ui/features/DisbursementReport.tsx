@@ -65,6 +65,8 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       }))
       .sort((a, b) => b.avg - a.avg)
 
+    const maxAvg = classification.length ? Math.max(...classification.map((c) => c.avg)) : 0
+
     // Top 5 slowest
     const top5Slowest = [...report]
       .sort((a, b) => b.approval_duration - a.approval_duration)
@@ -78,6 +80,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
       yesterdayCount: yesterdayData.length,
       fastest,
       slowest,
+      maxAvg,
       classification,
       top5Slowest,
     }
@@ -312,7 +315,7 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
                 <div className="w-full h-[2px] bg-surface-soft mt-4 overflow-hidden relative">
                   <div
                     className="absolute left-0 top-0 h-full bg-ink transition-all duration-1000"
-                    style={{ width: `${Math.min(100, (item.avg / (stats.slowest || 1)) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (item.avg / (stats.maxAvg || 1)) * 100)}%` }}
                   />
                 </div>
               </div>

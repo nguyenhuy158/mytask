@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
+import { Download, Upload } from 'lucide-react'
 import { Sidebar } from './ui/layouts/Sidebar'
 import { Header } from './ui/layouts/Header'
 import { Dashboard } from './ui/features/Dashboard'
@@ -464,11 +465,13 @@ function App() {
                 <div className="flex gap-4">
                   <button
                     onClick={exportEnvs}
-                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
+                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors flex items-center gap-2"
                   >
+                    <Download size={10} />
                     [EXPORT]
                   </button>
-                  <label className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors cursor-pointer">
+                  <label className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors cursor-pointer flex items-center gap-2">
+                    <Upload size={10} />
                     [IMPORT]
                     <input
                       type="file"

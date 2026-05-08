@@ -1,4 +1,5 @@
 import React from 'react'
+import { ArrowUp, ArrowDown, Play, Power, PowerOff } from 'lucide-react'
 import type { Cron } from '../../domain/models/Cron'
 import {
   Table,
@@ -31,8 +32,8 @@ export const CronTable: React.FC<CronTableProps> = ({
   selectedIndex = -1,
 }) => {
   const getSortIcon = (key: string) => {
-    if (sortConfig.key !== key) return '[ ]'
-    return sortConfig.direction === 'asc' ? '[↑]' : '[↓]'
+    if (sortConfig.key !== key) return null
+    return sortConfig.direction === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />
   }
 
   if (loading) {
@@ -87,10 +88,15 @@ export const CronTable: React.FC<CronTableProps> = ({
                 <Button
                   variant={cron.active ? 'danger' : 'success'}
                   onClick={() => onToggle(cron.id, !cron.active)}
+                  icon={cron.active ? <PowerOff size={12} /> : <Power size={12} />}
                 >
                   {cron.active ? 'DISABLE' : 'ENABLE'}
                 </Button>
-                <Button variant="underline" onClick={() => onRun(cron.id)}>
+                <Button
+                  variant="underline"
+                  onClick={() => onRun(cron.id)}
+                  icon={<Play size={12} />}
+                >
                   TRIGGER
                 </Button>
               </div>

@@ -11,7 +11,7 @@ import {
 } from '../components/Table'
 import { Typography } from '../components/Typography'
 import { Badge } from '../components/Badge'
-import { Spinner } from '../components/Spinner'
+import { Skeleton } from '../components/Skeleton'
 import { Select } from '../components/Select'
 import { ApprovalSpeedChart } from './ApprovalSpeedChart'
 import { LargeTrendChart } from './TrendCharts'
@@ -292,8 +292,52 @@ export const DisbursementReport: React.FC<DisbursementReportProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <Spinner label="FETCHING_REPORT_DATA..." />
+      <div className="space-y-12">
+        <div className="flex items-center justify-between border-b border-ink pb-8">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="border border-ink p-6 space-y-4 bg-canvas shadow-sm">
+              <Skeleton className="h-3 w-20" />
+              <div className="flex items-end justify-between">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+              <Skeleton className="h-3 w-32" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="space-y-6">
+            <Skeleton className="h-6 w-48" />
+            <div className="grid grid-cols-1 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="border border-hairline p-6 space-y-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-6 w-12" />
+                  </div>
+                  <Skeleton className="h-1 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-6 w-48" />
+            <div className="border border-ink p-4 space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex justify-between border-b border-hairline pb-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

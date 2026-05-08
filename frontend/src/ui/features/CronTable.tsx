@@ -11,7 +11,7 @@ import {
   Pagination,
 } from '../components/Table'
 import { Button } from '../components/Button'
-import { Spinner } from '../components/Spinner'
+import { Skeleton } from '../components/Skeleton'
 
 interface CronTableProps {
   crons: Cron[]
@@ -49,9 +49,40 @@ export const CronTable: React.FC<CronTableProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <Spinner label="CONNECTING_TO_RPC..." />
-      </div>
+      <Table>
+        <TableHeader>
+          <TableHeaderCell>Name</TableHeaderCell>
+          <TableHeaderCell>Model</TableHeaderCell>
+          <TableHeaderCell>Interval</TableHeaderCell>
+          <TableHeaderCell>Next Call</TableHeaderCell>
+          <TableHeaderCell>Status</TableHeaderCell>
+          <TableHeaderCell align="right">Actions</TableHeaderCell>
+        </TableHeader>
+        <TableBody>
+          {[...Array(5)].map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-40" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+              <TableCell align="right">
+                <Skeleton className="h-8 w-24 ml-auto" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     )
   }
 

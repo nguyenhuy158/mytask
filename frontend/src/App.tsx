@@ -81,6 +81,10 @@ function App() {
     const saved = localStorage.getItem('showPomodoro')
     return saved === 'true'
   })
+  const [showLogStream, setShowLogStream] = useState(() => {
+    const saved = localStorage.getItem('showLogStream')
+    return saved !== 'false' // Default to true
+  })
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme')
     return saved ? saved === 'dark' : true
@@ -242,6 +246,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('showPomodoro', String(showPomodoro))
   }, [showPomodoro])
+
+  useEffect(() => {
+    localStorage.setItem('showLogStream', String(showLogStream))
+  }, [showLogStream])
 
   useEffect(() => {
     wsAdapter.connect(
@@ -572,6 +580,16 @@ function App() {
                     >
                       [POMODORO_TIMER: {showPomodoro ? 'ON' : 'OFF'}]
                     </button>
+                    <button
+                      onClick={() => setShowLogStream(!showLogStream)}
+                      className={`text-[10px] font-bold px-3 py-1 border ${
+                        showLogStream
+                          ? 'bg-ink text-on-primary border-ink'
+                          : 'border-hairline hover:border-ink'
+                      }`}
+                    >
+                      [SYSTEM_LOG: {showLogStream ? 'ON' : 'OFF'}]
+                    </button>
                   </div>
                 </div>
 
@@ -778,9 +796,11 @@ function App() {
             <PomodoroTimer />
           </Draggable>
         )}
-        <Draggable className="pointer-events-auto">
-          <LogStream />
-        </Draggable>
+        {showLogStream && (
+          <Draggable className="pointer-events-auto">
+            <LogStream />
+          </Draggable>
+        )}
       </div>
 
       <Toaster position="bottom-right" />

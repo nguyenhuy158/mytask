@@ -21,6 +21,7 @@ import { OdooShell } from './ui/features/OdooShell'
 import { LogStream } from './ui/features/LogStream'
 import { CommandPalette } from './ui/components/CommandPalette'
 import { Draggable } from './ui/components/Draggable'
+import { CronBuilder } from './ui/components/CronBuilder'
 import { AddS3Modal } from './ui/features/AddS3Modal'
 import { AddWebhookModal } from './ui/features/AddWebhookModal'
 import { AddEnvModal } from './ui/features/AddEnvModal'
@@ -85,6 +86,7 @@ function App() {
   const [showAddWebhookModal, setShowAddWebhookModal] = useState(false)
   const [showAddEnvModal, setShowAddEnvModal] = useState(false)
   const [showAddS3Modal, setShowAddS3Modal] = useState(false)
+  const [showCronBuilder, setShowCronBuilder] = useState(false)
   const [editingEnv, setEditingEnv] = useState<OdooEnv | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -547,13 +549,21 @@ function App() {
                     Backup Policy
                   </h2>
                   <div className="flex items-center gap-4">
-                    <input
-                      type="text"
-                      value={backupCron}
-                      onChange={(e) => updateBackupCron(e.target.value)}
-                      className="bg-surface-soft border border-hairline px-4 py-2 text-xs font-bold outline-none focus:border-ink"
-                      placeholder="Cron Expression"
-                    />
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={backupCron}
+                        onChange={(e) => updateBackupCron(e.target.value)}
+                        className="flex-1 bg-surface-soft border border-hairline px-4 py-2 text-xs font-bold outline-none focus:border-ink"
+                        placeholder="Cron Expression"
+                      />
+                      <button
+                        onClick={() => setShowCronBuilder(true)}
+                        className="px-3 py-2 text-[10px] font-bold border border-hairline hover:bg-ink hover:text-on-primary transition-colors uppercase"
+                      >
+                        [BUILD]
+                      </button>
+                    </div>
                     <Select
                       value={defaultBackupTarget}
                       options={[
@@ -697,6 +707,14 @@ function App() {
             await addS3Config(config)
             setShowAddS3Modal(false)
           }}
+        />
+      )}
+
+      {showCronBuilder && (
+        <CronBuilder
+          value={backupCron}
+          onChange={updateBackupCron}
+          onClose={() => setShowCronBuilder(false)}
         />
       )}
 

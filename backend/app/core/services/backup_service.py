@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+from datetime import datetime
 from typing import Any
 
 from ..ports.external_services import StoragePort
@@ -37,12 +38,26 @@ class BackupService:
 
         return local_result
 
-    async def list_local_backups(self) -> list[str]:
+    async def list_local_backups(self) -> list[dict[str, Any]]:
         if not os.path.exists("backups"):
             return []
-        return sorted(
-            [f for f in os.listdir("backups") if f.startswith("tasks_")], reverse=True
-        )
+
+        backups = []
+        for f in os.listdir("backups"):
+            if f.startswith("tasks_"):
+                path = os.path.join("backups", f)
+                stats = os.stat(path)
+                backups.append(
+                    {
+                        "filename": f,
+                        "size": f"{stats.st_size / 1024 / 1024:.2f} MB",
+                        "timestamp": datetime.fromtimestamp(stats.st_mtime).strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
+                    }
+                )
+
+        return sorted(backups, key=lambda x: x["filename"], reverse=True)
 
     async def get_backup_cron(self) -> str:
         config = await self.repository.get_system_config("backup_cron")

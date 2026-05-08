@@ -2,7 +2,12 @@ import axios from 'axios'
 import type { ISystemRepository } from '../../ports/ISystemRepository'
 import type { Webhook } from '../../domain/models/Webhook'
 import type { S3Config, S3Backup } from '../../domain/models/S3'
-import type { AuditLog, SystemConfig, SchedulerHealth } from '../../domain/models/System'
+import type {
+  AuditLog,
+  SystemConfig,
+  SchedulerHealth,
+  LocalBackup,
+} from '../../domain/models/System'
 
 const API_BASE = '/api'
 
@@ -74,7 +79,7 @@ export class AxiosSystemRepository implements ISystemRepository {
     return res.data
   }
 
-  async getBackups(): Promise<string[]> {
+  async getBackups(): Promise<LocalBackup[]> {
     const res = await axios.get(`${API_BASE}/backups`)
     return res.data
   }

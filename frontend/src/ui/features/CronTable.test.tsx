@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { CronTable } from './CronTable'
 import { Cron } from '../../domain/models/Cron'
+import { TooltipProvider } from '@/ui/components/ui/tooltip'
 
 describe('CronTable Component', () => {
   const mockCrons: Cron[] = [
@@ -35,14 +36,16 @@ describe('CronTable Component', () => {
 
   it('renders crons correctly', () => {
     render(
-      <CronTable
-        crons={mockCrons}
-        loading={false}
-        sortConfig={{ key: null, direction: 'asc' }}
-        onRequestSort={mockOnRequestSort}
-        onToggle={mockOnToggle}
-        onRun={mockOnRun}
-      />
+      <TooltipProvider>
+        <CronTable
+          crons={mockCrons}
+          loading={false}
+          sortConfig={{ key: null, direction: 'asc' }}
+          onRequestSort={mockOnRequestSort}
+          onToggle={mockOnToggle}
+          onRun={mockOnRun}
+        />
+      </TooltipProvider>
     )
     
     expect(screen.getByText('Test Cron 1')).toBeDefined()
@@ -53,14 +56,16 @@ describe('CronTable Component', () => {
 
   it('calls onToggle when DISABLE/ENABLE is clicked', () => {
     render(
-      <CronTable
-        crons={mockCrons}
-        loading={false}
-        sortConfig={{ key: null, direction: 'asc' }}
-        onRequestSort={mockOnRequestSort}
-        onToggle={mockOnToggle}
-        onRun={mockOnRun}
-      />
+      <TooltipProvider>
+        <CronTable
+          crons={mockCrons}
+          loading={false}
+          sortConfig={{ key: null, direction: 'asc' }}
+          onRequestSort={mockOnRequestSort}
+          onToggle={mockOnToggle}
+          onRun={mockOnRun}
+        />
+      </TooltipProvider>
     )
     
     fireEvent.click(screen.getByText('DISABLE'))
@@ -72,14 +77,16 @@ describe('CronTable Component', () => {
 
   it('calls onRun when TRIGGER is clicked', () => {
     render(
-      <CronTable
-        crons={mockCrons}
-        loading={false}
-        sortConfig={{ key: null, direction: 'asc' }}
-        onRequestSort={mockOnRequestSort}
-        onToggle={mockOnToggle}
-        onRun={mockOnRun}
-      />
+      <TooltipProvider>
+        <CronTable
+          crons={mockCrons}
+          loading={false}
+          sortConfig={{ key: null, direction: 'asc' }}
+          onRequestSort={mockOnRequestSort}
+          onToggle={mockOnToggle}
+          onRun={mockOnRun}
+        />
+      </TooltipProvider>
     )
     
     const triggerButtons = screen.getAllByText('TRIGGER')

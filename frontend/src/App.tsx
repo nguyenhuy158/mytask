@@ -39,6 +39,7 @@ import { Select } from './ui/components/Select'
 import { CronBuilder } from './ui/components/CronBuilder'
 import { CommandPalette } from './ui/components/CommandPalette'
 import { Draggable } from './ui/components/Draggable'
+import { TooltipProvider } from '@/ui/components/ui/tooltip'
 
 // Icons
 import { Download, Upload } from 'lucide-react'
@@ -327,572 +328,574 @@ function App() {
   }[sidebarPosition]
   const selectedEnv = envs.find((e) => e.id === selectedEnvId)
   return (
-    <div
-      className={`flex h-screen bg-canvas overflow-hidden font-mono text-ink ${containerClasses}`}
-    >
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={handleSetActiveTab}
-        wsConnected={wsConnected}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        position={sidebarPosition}
-        setPosition={setSidebarPosition}
-      />
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        <Header
+    <TooltipProvider>
+      <div
+        className={`flex h-screen bg-canvas overflow-hidden font-mono text-ink ${containerClasses}`}
+      >
+        <Sidebar
           activeTab={activeTab}
-          searchTerm={searchTerm}
-          setSearchTerm={handleSetSearchTerm}
-          onRefresh={handleRefresh}
-          onNew={() => {
-            if (activeTab === 'webhooks') setShowAddWebhookModal(true)
-            else if (activeTab === 'envs') setShowAddEnvModal(true)
-            else if (activeTab === 's3') setShowAddS3Modal(true)
-            else if (activeTab === 'backups') triggerBackup()
-            else setShowAddModal(true)
-          }}
+          setActiveTab={handleSetActiveTab}
+          wsConnected={wsConnected}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          position={sidebarPosition}
+          setPosition={setSidebarPosition}
         />
-        <div className="flex-1 overflow-y-auto p-2 md:p-12">
-          {activeTab === 'tasks' && (
-            <div className="space-y-8 max-w-7xl mx-auto">
-              <div className="border-b border-ink pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase">
-                    Dashboard
-                  </h1>
-                  <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
-                    Executing automated tasks...
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(
-                          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/weekly-summary`,
-                        )
-                        const data = await res.json()
-                        toast(
-                          () => (
-                            <div className="flex flex-col">
-                              <span className="font-bold border-b border-hairline mb-1 pb-1 uppercase text-[10px]">
-                                Weekly Summary
-                              </span>
-                              <span className="text-[11px] whitespace-pre-wrap">
-                                {data.summary}
-                              </span>
-                            </div>
-                          ),
-                          {
-                            icon: '📊',
-                            duration: 6000,
-                          },
-                        )
-                      } catch {
-                        toast.error('Failed to get AI summary')
-                      }
-                    }}
-                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
-                  >
-                    [AI_SUMMARY]
-                  </button>
-                  <button
-                    onClick={fetchRankedTasks}
-                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
-                  >
-                    [AI_RANK]
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'list' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
-                  >
-                    [LIST]
-                  </button>
-                  <button
-                    onClick={() => setViewMode('board')}
-                    className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'board' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
-                  >
-                    [BOARD]
-                  </button>
-                  <button
-                    onClick={() => setViewMode('calendar')}
-                    className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'calendar' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
-                  >
-                    [CALENDAR]
-                  </button>
-                </div>
-              </div>
-              <Dashboard
-                tasks={filteredTasks}
-                viewMode={viewMode}
-                results={results}
-                onDelete={deleteTask}
-                onRun={runTask}
-                onUpdateStatus={updateTaskStatus}
-                onUploadAttachment={async (taskId, file) => {
-                  const s3Config = s3Configs.find((c) => c.active) || s3Configs[0]
-                  if (!s3Config) {
-                    toast.error('No active S3 configuration found for upload')
-                    return
-                  }
-                  await uploadAttachment(taskId, s3Config.id, file)
-                }}
-                selectedIndex={selectedIndex}
-              />
-              <AuditLogTable />
-              <HistoryTable history={history} />
-            </div>
-          )}
-          {activeTab === 'crons' && (
-            <div className="space-y-8">
-              <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-ink pb-4 gap-4">
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold uppercase">Scheduled Jobs</h1>
-                  <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
-                    Odoo XML-RPC Automation
-                  </p>
-                </div>
-                <Select
-                  value={selectedEnvId || ''}
-                  options={envs.map((env) => ({ value: env.id, label: env.name }))}
-                  onChange={(val) => setSelectedEnvId(Number(val))}
-                  placeholder="Select Environment"
-                  className="w-full md:w-48"
-                />
-              </div>
-              <CronTable
-                crons={filteredCrons}
-                loading={!!odooLoading}
-                sortConfig={sortConfig}
-                onRequestSort={requestSort}
-                onToggle={toggleCron}
-                onRun={runCron}
-                selectedIndex={selectedIndex}
-              />
-              {selectedEnvId && (
-                <div className="mt-12 space-y-12">
+        <main className="flex-1 flex flex-col relative overflow-hidden">
+          <Header
+            activeTab={activeTab}
+            searchTerm={searchTerm}
+            setSearchTerm={handleSetSearchTerm}
+            onRefresh={handleRefresh}
+            onNew={() => {
+              if (activeTab === 'webhooks') setShowAddWebhookModal(true)
+              else if (activeTab === 'envs') setShowAddEnvModal(true)
+              else if (activeTab === 's3') setShowAddS3Modal(true)
+              else if (activeTab === 'backups') triggerBackup()
+              else setShowAddModal(true)
+            }}
+          />
+          <div className="flex-1 overflow-y-auto p-2 md:p-12">
+            {activeTab === 'tasks' && (
+              <div className="space-y-8 max-w-7xl mx-auto">
+                <div className="border-b border-ink pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-bold uppercase mb-4">Remote Shell</h2>
-                    <OdooShell envId={selectedEnvId} />
+                    <h1 className="text-xl md:text-2xl font-bold tracking-tight uppercase">
+                      Dashboard
+                    </h1>
+                    <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
+                      Executing automated tasks...
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(
+                            `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/weekly-summary`,
+                          )
+                          const data = await res.json()
+                          toast(
+                            () => (
+                              <div className="flex flex-col">
+                                <span className="font-bold border-b border-hairline mb-1 pb-1 uppercase text-[10px]">
+                                  Weekly Summary
+                                </span>
+                                <span className="text-[11px] whitespace-pre-wrap">
+                                  {data.summary}
+                                </span>
+                              </div>
+                            ),
+                            {
+                              icon: '📊',
+                              duration: 6000,
+                            },
+                          )
+                        } catch {
+                          toast.error('Failed to get AI summary')
+                        }
+                      }}
+                      className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
+                    >
+                      [AI_SUMMARY]
+                    </button>
+                    <button
+                      onClick={fetchRankedTasks}
+                      className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
+                    >
+                      [AI_RANK]
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'list' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
+                    >
+                      [LIST]
+                    </button>
+                    <button
+                      onClick={() => setViewMode('board')}
+                      className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'board' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
+                    >
+                      [BOARD]
+                    </button>
+                    <button
+                      onClick={() => setViewMode('calendar')}
+                      className={`text-[10px] font-bold px-3 py-1 border ${viewMode === 'calendar' ? 'bg-ink text-on-primary border-ink' : 'border-hairline hover:border-ink'}`}
+                    >
+                      [CALENDAR]
+                    </button>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-          {activeTab === 'reports' && (
-            <div className="space-y-8">
-              <div className="flex items-end justify-between border-b border-ink pb-4">
-                <div>
-                  <h1 className="text-2xl font-bold uppercase">Reports</h1>
-                  <p className="text-mute text-xs mt-2 italic">Odoo Data Analysis</p>
-                </div>
-                <Select
-                  value={selectedEnvId || ''}
-                  options={envs.map((env) => ({ value: env.id, label: env.name }))}
-                  onChange={(val) => setSelectedEnvId(Number(val))}
-                  placeholder="Select Environment"
-                  className="w-48"
+                <Dashboard
+                  tasks={filteredTasks}
+                  viewMode={viewMode}
+                  results={results}
+                  onDelete={deleteTask}
+                  onRun={runTask}
+                  onUpdateStatus={updateTaskStatus}
+                  onUploadAttachment={async (taskId, file) => {
+                    const s3Config = s3Configs.find((c) => c.active) || s3Configs[0]
+                    if (!s3Config) {
+                      toast.error('No active S3 configuration found for upload')
+                      return
+                    }
+                    await uploadAttachment(taskId, s3Config.id, file)
+                  }}
+                  selectedIndex={selectedIndex}
                 />
+                <AuditLogTable />
+                <HistoryTable history={history} />
               </div>
-              {selectedEnvId ? (
-                <DisbursementReport
-                  report={odooReportData}
+            )}
+            {activeTab === 'crons' && (
+              <div className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-ink pb-4 gap-4">
+                  <div>
+                    <h1 className="text-xl md:text-2xl font-bold uppercase">Scheduled Jobs</h1>
+                    <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
+                      Odoo XML-RPC Automation
+                    </p>
+                  </div>
+                  <Select
+                    value={selectedEnvId || ''}
+                    options={envs.map((env) => ({ value: env.id, label: env.name }))}
+                    onChange={(val) => setSelectedEnvId(Number(val))}
+                    placeholder="Select Environment"
+                    className="w-full md:w-48"
+                  />
+                </div>
+                <CronTable
+                  crons={filteredCrons}
                   loading={!!odooLoading}
-                  envUrl={selectedEnv?.url}
+                  sortConfig={sortConfig}
+                  onRequestSort={requestSort}
+                  onToggle={toggleCron}
+                  onRun={runCron}
+                  selectedIndex={selectedIndex}
                 />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">
-                  <p className="text-ash font-bold uppercase tracking-widest text-sm">
-                    PLEASE_SELECT_AN_ENVIRONMENT
-                  </p>
+                {selectedEnvId && (
+                  <div className="mt-12 space-y-12">
+                    <div>
+                      <h2 className="text-xl font-bold uppercase mb-4">Remote Shell</h2>
+                      <OdooShell envId={selectedEnvId} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'reports' && (
+              <div className="space-y-8">
+                <div className="flex items-end justify-between border-b border-ink pb-4">
+                  <div>
+                    <h1 className="text-2xl font-bold uppercase">Reports</h1>
+                    <p className="text-mute text-xs mt-2 italic">Odoo Data Analysis</p>
+                  </div>
+                  <Select
+                    value={selectedEnvId || ''}
+                    options={envs.map((env) => ({ value: env.id, label: env.name }))}
+                    onChange={(val) => setSelectedEnvId(Number(val))}
+                    placeholder="Select Environment"
+                    className="w-48"
+                  />
                 </div>
-              )}
-            </div>
-          )}
-          {activeTab === 'envs' && (
-            <div className="space-y-8">
-              <div className="flex items-end justify-between border-b border-ink pb-4">
-                <h1 className="text-2xl font-bold uppercase">Environments</h1>
-                <div className="flex gap-4">
-                  <button
-                    onClick={exportEnvs}
-                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors flex items-center gap-2"
-                  >
-                    <Download size={10} />
-                    [EXPORT]
-                  </button>
-                  <label className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors cursor-pointer flex items-center gap-2">
-                    <Upload size={10} />
-                    [IMPORT]
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={handleImportEnvs}
-                      className="hidden"
+                {selectedEnvId ? (
+                  <DisbursementReport
+                    report={odooReportData}
+                    loading={!!odooLoading}
+                    envUrl={selectedEnv?.url}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">
+                    <p className="text-ash font-bold uppercase tracking-widest text-sm">
+                      PLEASE_SELECT_AN_ENVIRONMENT
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'envs' && (
+              <div className="space-y-8">
+                <div className="flex items-end justify-between border-b border-ink pb-4">
+                  <h1 className="text-2xl font-bold uppercase">Environments</h1>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={exportEnvs}
+                      className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors flex items-center gap-2"
+                    >
+                      <Download size={10} />
+                      [EXPORT]
+                    </button>
+                    <label className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors cursor-pointer flex items-center gap-2">
+                      <Upload size={10} />
+                      [IMPORT]
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleImportEnvs}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {envs.map((env) => (
+                    <EnvCard
+                      key={env.id}
+                      env={env}
+                      testingEnvId={testingEnvId}
+                      onTest={handleTestEnv}
+                      onUpdate={updateEnv}
+                      onEdit={setEditingEnv}
+                      onDelete={handleDeleteEnv}
+                      onDuplicate={duplicateEnv}
+                      onSetDefault={handleSetDefaultEnv}
                     />
-                  </label>
+                  ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {envs.map((env) => (
-                  <EnvCard
-                    key={env.id}
-                    env={env}
-                    testingEnvId={testingEnvId}
-                    onTest={handleTestEnv}
-                    onUpdate={updateEnv}
-                    onEdit={setEditingEnv}
-                    onDelete={handleDeleteEnv}
-                    onDuplicate={duplicateEnv}
-                    onSetDefault={handleSetDefaultEnv}
-                  />
-                ))}
+            )}
+            {activeTab === 'webhooks' && (
+              <div className="space-y-8">
+                <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Webhooks</h1>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {webhooks.map((webhook) => (
+                    <WebhookCard
+                      key={webhook.id}
+                      webhook={webhook}
+                      testingWebhookId={testingWebhookId}
+                      onTest={testWebhook}
+                      onDelete={() => deleteWebhook(webhook.id)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {activeTab === 'webhooks' && (
-            <div className="space-y-8">
-              <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Webhooks</h1>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {webhooks.map((webhook) => (
-                  <WebhookCard
-                    key={webhook.id}
-                    webhook={webhook}
-                    testingWebhookId={testingWebhookId}
-                    onTest={testWebhook}
-                    onDelete={() => deleteWebhook(webhook.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {activeTab === 'config' && config && (
-            <div className="space-y-8">
-              <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
-                System Config
-              </h1>
-              <div className="max-w-2xl space-y-12">
-                <div className="space-y-4">
-                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Layout</h2>
-                  <div className="flex gap-2">
-                    {(['left', 'right', 'top', 'bottom'] as const).map((pos) => (
+            )}
+            {activeTab === 'config' && config && (
+              <div className="space-y-8">
+                <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
+                  System Config
+                </h1>
+                <div className="max-w-2xl space-y-12">
+                  <div className="space-y-4">
+                    <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Layout</h2>
+                    <div className="flex gap-2">
+                      {(['left', 'right', 'top', 'bottom'] as const).map((pos) => (
+                        <button
+                          key={pos}
+                          onClick={() => setSidebarPosition(pos)}
+                          className={`text-[10px] font-bold px-2 md:px-3 py-1 border ${
+                            sidebarPosition === pos
+                              ? 'bg-ink text-on-primary border-ink'
+                              : 'border-hairline hover:border-ink'
+                          }`}
+                        >
+                          <span className="hidden md:inline">[{pos.toUpperCase()}]</span>
+                          <span className="md:hidden">[{pos[0].toUpperCase()}]</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Widgets</h2>
+                    <div className="flex gap-2">
                       <button
-                        key={pos}
-                        onClick={() => setSidebarPosition(pos)}
-                        className={`text-[10px] font-bold px-2 md:px-3 py-1 border ${
-                          sidebarPosition === pos
+                        onClick={() => setShowPomodoro(!showPomodoro)}
+                        className={`text-[10px] font-bold px-3 py-1 border ${
+                          showPomodoro
                             ? 'bg-ink text-on-primary border-ink'
                             : 'border-hairline hover:border-ink'
                         }`}
                       >
-                        <span className="hidden md:inline">[{pos.toUpperCase()}]</span>
-                        <span className="md:hidden">[{pos[0].toUpperCase()}]</span>
+                        [POMODORO_TIMER: {showPomodoro ? 'ON' : 'OFF'}]
                       </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">Widgets</h2>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowPomodoro(!showPomodoro)}
-                      className={`text-[10px] font-bold px-3 py-1 border ${
-                        showPomodoro
-                          ? 'bg-ink text-on-primary border-ink'
-                          : 'border-hairline hover:border-ink'
-                      }`}
-                    >
-                      [POMODORO_TIMER: {showPomodoro ? 'ON' : 'OFF'}]
-                    </button>
-                    <button
-                      onClick={() => setShowLogStream(!showLogStream)}
-                      className={`text-[10px] font-bold px-3 py-1 border ${
-                        showLogStream
-                          ? 'bg-ink text-on-primary border-ink'
-                          : 'border-hairline hover:border-ink'
-                      }`}
-                    >
-                      [SYSTEM_LOG: {showLogStream ? 'ON' : 'OFF'}]
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
-                    Error Alerts
-                  </h2>
-                  <div className="space-y-2">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="flex items-center justify-between bg-surface-soft p-3 border border-hairline"
+                      <button
+                        onClick={() => setShowLogStream(!showLogStream)}
+                        className={`text-[10px] font-bold px-3 py-1 border ${
+                          showLogStream
+                            ? 'bg-ink text-on-primary border-ink'
+                            : 'border-hairline hover:border-ink'
+                        }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-bold px-2 py-0.5 bg-ink text-on-primary uppercase">
-                            {n.type}
-                          </span>
-                          <span className="text-xs font-bold">{n.name}</span>
+                        [SYSTEM_LOG: {showLogStream ? 'ON' : 'OFF'}]
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
+                      Error Alerts
+                    </h2>
+                    <div className="space-y-2">
+                      {notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className="flex items-center justify-between bg-surface-soft p-3 border border-hairline"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-ink text-on-primary uppercase">
+                              {n.type}
+                            </span>
+                            <span className="text-xs font-bold">{n.name}</span>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              await fetch(
+                                `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications/${n.id}`,
+                                { method: 'DELETE' },
+                              )
+                              fetchNotifications()
+                            }}
+                            className="text-[10px] font-bold text-danger hover:underline"
+                          >
+                            [REMOVE]
+                          </button>
                         </div>
-                        <button
-                          onClick={async () => {
+                      ))}
+                      <button
+                        onClick={async () => {
+                          const name = await promptAction('Name:')
+                          if (!name) return
+                          const type = await promptAction('Type (slack/telegram/webhook):')
+                          if (!type) return
+                          const url = await promptAction('Webhook URL:')
+                          if (name && type && url) {
                             await fetch(
-                              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications/${n.id}`,
-                              { method: 'DELETE' },
+                              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications`,
+                              {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name, type, webhook_url: url }),
+                              },
                             )
                             fetchNotifications()
-                          }}
-                          className="text-[10px] font-bold text-danger hover:underline"
+                          }
+                        }}
+                        className="w-full py-2 border border-dashed border-hairline text-[10px] font-bold text-mute hover:border-ink hover:text-ink transition-colors uppercase"
+                      >
+                        + Add Notification Target
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
+                      Backup Policy
+                    </h2>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={backupCron}
+                          onChange={(e) => updateBackupCron(e.target.value)}
+                          className="flex-1 bg-surface-soft border border-hairline px-4 py-2 text-xs font-bold outline-none focus:border-ink"
+                          placeholder="Cron Expression"
+                        />
+                        <button
+                          onClick={() => setShowCronBuilder(true)}
+                          className="px-3 py-2 text-[10px] font-bold border border-hairline hover:bg-ink hover:text-on-primary transition-colors uppercase"
                         >
-                          [REMOVE]
+                          [BUILD]
                         </button>
                       </div>
-                    ))}
-                    <button
-                      onClick={async () => {
-                        const name = await promptAction('Name:')
-                        if (!name) return
-                        const type = await promptAction('Type (slack/telegram/webhook):')
-                        if (!type) return
-                        const url = await promptAction('Webhook URL:')
-                        if (name && type && url) {
-                          await fetch(
-                            `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/notifications`,
-                            {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ name, type, webhook_url: url }),
-                            },
-                          )
-                          fetchNotifications()
-                        }
-                      }}
-                      className="w-full py-2 border border-dashed border-hairline text-[10px] font-bold text-mute hover:border-ink hover:text-ink transition-colors uppercase"
-                    >
-                      + Add Notification Target
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
-                    Backup Policy
-                  </h2>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={backupCron}
-                        onChange={(e) => updateBackupCron(e.target.value)}
-                        className="flex-1 bg-surface-soft border border-hairline px-4 py-2 text-xs font-bold outline-none focus:border-ink"
-                        placeholder="Cron Expression"
+                      <Select
+                        value={defaultBackupTarget}
+                        options={[
+                          { value: 'local', label: 'LOCAL_DB' },
+                          ...s3Configs.map((c) => ({
+                            value: `s3:${c.id}`,
+                            label: `S3: ${c.name.toUpperCase()}`,
+                          })),
+                        ]}
+                        onChange={updateDefaultBackupTarget}
+                        className="w-48"
                       />
-                      <button
-                        onClick={() => setShowCronBuilder(true)}
-                        className="px-3 py-2 text-[10px] font-bold border border-hairline hover:bg-ink hover:text-on-primary transition-colors uppercase"
-                      >
-                        [BUILD]
-                      </button>
                     </div>
-                    <Select
-                      value={defaultBackupTarget}
-                      options={[
-                        { value: 'local', label: 'LOCAL_DB' },
-                        ...s3Configs.map((c) => ({
-                          value: `s3:${c.id}`,
-                          label: `S3: ${c.name.toUpperCase()}`,
-                        })),
-                      ]}
-                      onChange={updateDefaultBackupTarget}
-                      className="w-48"
-                    />
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
-                    External API Keys
-                  </h2>
-                  <div className="bg-surface-soft p-6 border border-hairline space-y-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold">SYSTEM_UUID</span>
-                      <span className="text-ash tabular-nums">{config.system_uuid}</span>
+                  <div className="space-y-4">
+                    <h2 className="text-xs font-bold text-mute uppercase tracking-widest">
+                      External API Keys
+                    </h2>
+                    <div className="bg-surface-soft p-6 border border-hairline space-y-4">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold">SYSTEM_UUID</span>
+                        <span className="text-ash tabular-nums">{config.system_uuid}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-          {activeTab === 'backups' && (
-            <div className="space-y-8">
-              <div className="flex items-end justify-between border-b border-ink pb-4">
-                <h1 className="text-2xl font-bold uppercase">Backups</h1>
-                <button
-                  onClick={triggerBackup}
-                  className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
-                >
-                  [BACKUP_NOW]
-                </button>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {backups.map((backup) => (
-                  <div
-                    key={backup.filename}
-                    className="bg-surface-soft border border-hairline p-4 flex items-center justify-between group hover:border-ink transition-all"
+            )}
+            {activeTab === 'backups' && (
+              <div className="space-y-8">
+                <div className="flex items-end justify-between border-b border-ink pb-4">
+                  <h1 className="text-2xl font-bold uppercase">Backups</h1>
+                  <button
+                    onClick={triggerBackup}
+                    className="text-[10px] font-bold px-3 py-1 border border-ink hover:bg-ink hover:text-on-primary transition-colors"
                   >
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold tabular-nums">{backup.filename}</span>
-                      <span className="text-[10px] text-ash uppercase font-bold mt-1">
-                        {backup.size} • {backup.timestamp}
-                      </span>
+                    [BACKUP_NOW]
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {backups.map((backup) => (
+                    <div
+                      key={backup.filename}
+                      className="bg-surface-soft border border-hairline p-4 flex items-center justify-between group hover:border-ink transition-all"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold tabular-nums">{backup.filename}</span>
+                        <span className="text-[10px] text-ash uppercase font-bold mt-1">
+                          {backup.size} • {backup.timestamp}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => downloadBackup(backup.filename)}
+                          className="text-[10px] font-bold hover:underline"
+                        >
+                          [DOWNLOAD]
+                        </button>
+                        <button
+                          onClick={() => restoreBackup(backup.filename)}
+                          className="text-[10px] font-bold text-accent hover:underline"
+                        >
+                          [RESTORE]
+                        </button>
+                        <button
+                          onClick={() => deleteBackup(backup.filename)}
+                          className="text-[10px] font-bold text-danger hover:underline"
+                        >
+                          [DELETE]
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => downloadBackup(backup.filename)}
-                        className="text-[10px] font-bold hover:underline"
-                      >
-                        [DOWNLOAD]
-                      </button>
-                      <button
-                        onClick={() => restoreBackup(backup.filename)}
-                        className="text-[10px] font-bold text-accent hover:underline"
-                      >
-                        [RESTORE]
-                      </button>
-                      <button
-                        onClick={() => deleteBackup(backup.filename)}
-                        className="text-[10px] font-bold text-danger hover:underline"
-                      >
-                        [DELETE]
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {activeTab === 'wiki' && <Wiki />}
-          {activeTab === 's3' && (
-            <div className="space-y-8">
-              <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
-                S3 File Explorer
-              </h1>
-              <S3Explorer />
-            </div>
-          )}
-          {activeTab === 'analytics' && (
-            <div className="space-y-8">
-              <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Analytics</h1>
-              <AsciiDashboard tasks={filteredTasks} />
-            </div>
-          )}
-        </div>
-      </main>
-      {showFocusMode && <FocusMode onClose={() => setShowFocusMode(false)} />}
-      {showAddModal && (
-        <AddTaskModal
-          tasks={filteredTasks}
-          envs={envs}
-          onClose={() => setShowAddModal(false)}
-          onAdd={async (task) => {
-            await addTask(task)
-            setShowAddModal(false)
+            )}
+            {activeTab === 'wiki' && <Wiki />}
+            {activeTab === 's3' && (
+              <div className="space-y-8">
+                <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">
+                  S3 File Explorer
+                </h1>
+                <S3Explorer />
+              </div>
+            )}
+            {activeTab === 'analytics' && (
+              <div className="space-y-8">
+                <h1 className="text-2xl font-bold uppercase border-b border-ink pb-4">Analytics</h1>
+                <AsciiDashboard tasks={filteredTasks} />
+              </div>
+            )}
+          </div>
+        </main>
+        {showFocusMode && <FocusMode onClose={() => setShowFocusMode(false)} />}
+        {showAddModal && (
+          <AddTaskModal
+            tasks={filteredTasks}
+            envs={envs}
+            onClose={() => setShowAddModal(false)}
+            onAdd={async (task) => {
+              await addTask(task)
+              setShowAddModal(false)
+            }}
+          />
+        )}
+        {showAddWebhookModal && (
+          <AddWebhookModal
+            onClose={() => setShowAddWebhookModal(false)}
+            onAdd={async (webhook) => {
+              await addWebhook(webhook)
+              setShowAddWebhookModal(false)
+            }}
+          />
+        )}
+        {showAddEnvModal && (
+          <AddEnvModal
+            onClose={() => setShowAddEnvModal(false)}
+            onAdd={async (env) => {
+              await addEnv(env)
+              setShowAddEnvModal(false)
+            }}
+          />
+        )}
+        {editingEnv && (
+          <EditEnvModal
+            env={editingEnv}
+            onClose={() => setEditingEnv(null)}
+            onUpdate={async (id, data) => {
+              await updateEnv(id, data)
+              setEditingEnv(null)
+            }}
+          />
+        )}
+        {showAddS3Modal && (
+          <AddS3Modal
+            onClose={() => setShowAddS3Modal(false)}
+            onAdd={async (config) => {
+              await addS3Config(config)
+              setShowAddS3Modal(false)
+            }}
+          />
+        )}
+        {showCronBuilder && (
+          <CronBuilder
+            value={backupCron}
+            onChange={updateBackupCron}
+            onClose={() => setShowCronBuilder(false)}
+          />
+        )}
+        <CommandPalette
+          onNavigate={(tab) => {
+            if (tab === 'shell') {
+              handleSetActiveTab('crons')
+            } else {
+              handleSetActiveTab(tab)
+            }
           }}
-        />
-      )}
-      {showAddWebhookModal && (
-        <AddWebhookModal
-          onClose={() => setShowAddWebhookModal(false)}
-          onAdd={async (webhook) => {
-            await addWebhook(webhook)
-            setShowAddWebhookModal(false)
-          }}
-        />
-      )}
-      {showAddEnvModal && (
-        <AddEnvModal
-          onClose={() => setShowAddEnvModal(false)}
-          onAdd={async (env) => {
-            await addEnv(env)
-            setShowAddEnvModal(false)
-          }}
-        />
-      )}
-      {editingEnv && (
-        <EditEnvModal
-          env={editingEnv}
-          onClose={() => setEditingEnv(null)}
-          onUpdate={async (id, data) => {
-            await updateEnv(id, data)
-            setEditingEnv(null)
-          }}
-        />
-      )}
-      {showAddS3Modal && (
-        <AddS3Modal
-          onClose={() => setShowAddS3Modal(false)}
-          onAdd={async (config) => {
-            await addS3Config(config)
-            setShowAddS3Modal(false)
-          }}
-        />
-      )}
-      {showCronBuilder && (
-        <CronBuilder
-          value={backupCron}
-          onChange={updateBackupCron}
-          onClose={() => setShowCronBuilder(false)}
-        />
-      )}
-      <CommandPalette
-        onNavigate={(tab) => {
-          if (tab === 'shell') {
-            handleSetActiveTab('crons')
-          } else {
-            handleSetActiveTab(tab)
-          }
-        }}
-        onAction={async (action) => {
-          if (action === 'new-task') setShowAddModal(true)
-          if (action === 'rank') fetchRankedTasks()
-          if (action === 'zen') setShowFocusMode(true)
-          if (action === 'ai-parse') {
-            const text = await promptAction(
-              'Enter your task in natural language (e.g., "Meeting tomorrow at 9am"):',
-            )
-            if (text) {
-              try {
-                const res = await fetch(
-                  `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/parse-task`,
-                  {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text }),
-                  },
-                )
-                const suggestedTask = await res.json()
-                // Open add modal with pre-filled data
-                // For now just show toast or we can enhance AddTaskModal to take initial data
-                toast.success(`AI suggested: ${suggestedTask.name}`)
-                setShowAddModal(true)
-              } catch {
-                toast.error('AI parsing failed')
+          onAction={async (action) => {
+            if (action === 'new-task') setShowAddModal(true)
+            if (action === 'rank') fetchRankedTasks()
+            if (action === 'zen') setShowFocusMode(true)
+            if (action === 'ai-parse') {
+              const text = await promptAction(
+                'Enter your task in natural language (e.g., "Meeting tomorrow at 9am"):',
+              )
+              if (text) {
+                try {
+                  const res = await fetch(
+                    `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/ai/parse-task`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ text }),
+                    },
+                  )
+                  const suggestedTask = await res.json()
+                  // Open add modal with pre-filled data
+                  // For now just show toast or we can enhance AddTaskModal to take initial data
+                  toast.success(`AI suggested: ${suggestedTask.name}`)
+                  setShowAddModal(true)
+                } catch {
+                  toast.error('AI parsing failed')
+                }
               }
             }
-          }
-        }}
-      />
-      <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">
-        {showPomodoro && (
-          <Draggable className="pointer-events-auto">
-            <PomodoroTimer />
-          </Draggable>
-        )}
-        {showLogStream && (
-          <Draggable className="pointer-events-auto">
-            <LogStream />
-          </Draggable>
-        )}
+          }}
+        />
+        <div className="fixed bottom-4 right-4 md:bottom-10 md:right-10 flex flex-col items-end gap-2 md:gap-4 z-[60] pointer-events-none">
+          {showPomodoro && (
+            <Draggable className="pointer-events-auto">
+              <PomodoroTimer />
+            </Draggable>
+          )}
+          {showLogStream && (
+            <Draggable className="pointer-events-auto">
+              <LogStream />
+            </Draggable>
+          )}
+        </div>
+        <Toaster position="bottom-right" />
       </div>
-      <Toaster position="bottom-right" />
-    </div>
+    </TooltipProvider>
   )
 }
 export default App

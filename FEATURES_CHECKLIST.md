@@ -12,6 +12,7 @@
 - [x] **Auto-prioritization**: Thuật toán tự động sắp xếp độ ưu tiên dựa trên deadline & priority. (Implemented)
 
 ## 3. Giao Diện & Trải Nghiệm (UX/UI)
+- [x] **Core UI Kit**: Installed and configured Shadcn UI components: `tooltip`, `popover`, `dialog`, `dropdown-menu`, `form`, `table`, and `label`.
 - [x] **Dark Mode**: Hỗ trợ giao diện tối. (Implemented)
 - [x] **Real-time Updates**: Cập nhật trạng thái tức thì qua WebSockets (Create/Delete/Status/Complete).
 - [x] **Command Palette (Ctrl+K)**: Bộ phím tắt điều hướng nhanh.

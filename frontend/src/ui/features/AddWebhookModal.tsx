@@ -1,11 +1,21 @@
 import React, { useState } from 'react'
-import type { Webhook } from '../../domain/models/Webhook'
-import { Button } from '../components/Button'
-import { Select } from '../components/Select'
+import type { Webhook } from '@/domain/models/Webhook'
+import { Button } from '@/ui/components/Button'
+import { Select } from '@/ui/components/Select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/ui/components/ui/dialog'
+import { Label } from '@/ui/components/ui/label'
+
 interface AddWebhookModalProps {
   onClose: () => void
   onAdd: (webhook: Partial<Webhook>) => void
 }
+
 export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd }) => {
   const [formData, setFormData] = useState<Partial<Webhook>>({
     name: '',
@@ -15,25 +25,30 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
     target: '',
     active: 1,
   })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onAdd(formData)
     onClose()
   }
+
   return (
-    <div className="fixed inset-0 z-[400] bg-canvas/90 backdrop-blur-md flex items-center justify-center p-8">
-      <div className="w-full max-w-lg bg-canvas border border-ink p-12 space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tighter uppercase mb-2">Initialize_Webhook</h2>
-          <p className="text-xs italic text-mute">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg bg-canvas border-ink p-12 shadow-2xl gap-10">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-3xl font-bold tracking-tighter uppercase">
+            Initialize_Webhook
+          </DialogTitle>
+          <DialogDescription className="text-xs italic text-mute">
             Configure a new outgoing notification endpoint.
-          </p>
-        </div>
+          </DialogDescription>
+        </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Webhook_Name
-            </label>
+            </Label>
             <input
               autoFocus
               required
@@ -43,10 +58,11 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
+
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Type
-            </label>
+            </Label>
             <Select
               value={formData.type || 'webhook'}
               options={[
@@ -64,11 +80,12 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               }
             />
           </div>
+
           {formData.type === 'telegram' ? (
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+              <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
                 Chat_ID
-              </label>
+              </Label>
               <input
                 required
                 className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -79,9 +96,9 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+              <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
                 URL / Target
-              </label>
+              </Label>
               <input
                 required
                 className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -91,10 +108,11 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               />
             </div>
           )}
+
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Secret / API_Key
-            </label>
+            </Label>
             <input
               type="password"
               className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -103,6 +121,7 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
               onChange={(e) => setFormData({ ...formData, secret: e.target.value })}
             />
           </div>
+
           <div className="flex gap-4 pt-4">
             <Button type="submit" fullWidth>
               [CREATE_WEBHOOK]
@@ -112,7 +131,7 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ onClose, onAdd
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

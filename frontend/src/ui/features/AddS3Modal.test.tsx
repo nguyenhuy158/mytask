@@ -50,7 +50,8 @@ describe('AddS3Modal Component', () => {
   it('calls onClose when [ESC] is clicked', () => {
     render(<AddS3Modal onClose={mockOnClose} onAdd={mockOnAdd} />)
     
-    fireEvent.click(screen.getByText('[ESC]'))
+    // DialogClose component from Shadcn/Radix has "sr-only" text "Close"
+    fireEvent.click(screen.getByText('Close'))
     expect(mockOnClose).toHaveBeenCalled()
   })
 

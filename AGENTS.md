@@ -16,7 +16,7 @@
 - **Verify:** `make lint && make format && make test` (Run before EVERY commit).
 - **Test:** `make test-backend`, `make test-frontend`. `make cov` to view reports.
 - **DB:** `cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate`.
-- **Frontend UI:** Use `npx shadcn@latest add <component>` in `frontend/`.
+- **Frontend UI:** Shadcn UI components installed: `tooltip`, `popover`, `dialog`, `dropdown-menu`, `form`, `table`, `label`, `chart`. Use `npx shadcn@latest add <component>` for new ones.
 - **Port:** Backend :8000, Frontend :3000 (via `make dev-local`).
 
 ## Architecture & Conventions

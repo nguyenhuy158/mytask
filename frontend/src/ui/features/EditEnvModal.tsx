@@ -1,11 +1,21 @@
 import React, { useState } from 'react'
-import type { OdooEnv } from '../../domain/models/OdooEnv'
-import { Button } from '../components/Button'
+import type { OdooEnv } from '@/domain/models/OdooEnv'
+import { Button } from '@/ui/components/Button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/ui/components/ui/dialog'
+import { Label } from '@/ui/components/ui/label'
+
 interface EditEnvModalProps {
   env: OdooEnv
   onClose: () => void
   onUpdate: (id: number, data: Partial<OdooEnv>) => void
 }
+
 export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpdate }) => {
   const [formData, setFormData] = useState<Partial<OdooEnv>>({
     name: env.name,
@@ -15,23 +25,30 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
     password: env.password,
     color: env.color,
   })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onUpdate(env.id, formData)
     onClose()
   }
+
   return (
-    <div className="fixed inset-0 z-[400] bg-canvas/90 backdrop-blur-md flex items-center justify-center p-8">
-      <div className="w-full max-w-lg bg-canvas border border-ink p-12 space-y-10 animate-in zoom-in-95 duration-200 shadow-2xl">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tighter uppercase mb-2">Update_Environment</h2>
-          <p className="text-xs italic text-mute">Modify Odoo XML-RPC connection parameters.</p>
-        </div>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg bg-canvas border-ink p-12 shadow-2xl gap-10">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-3xl font-bold tracking-tighter uppercase">
+            Update_Environment
+          </DialogTitle>
+          <DialogDescription className="text-xs italic text-mute">
+            Modify Odoo XML-RPC connection parameters.
+          </DialogDescription>
+        </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Environment_Name
-            </label>
+            </Label>
             <input
               autoFocus
               required
@@ -41,10 +58,9 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
+
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
-              URL
-            </label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">URL</Label>
             <input
               required
               className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -53,11 +69,12 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
             />
           </div>
+
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+              <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
                 Database
-              </label>
+              </Label>
               <input
                 required
                 className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -67,9 +84,9 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+              <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
                 Username
-              </label>
+              </Label>
               <input
                 required
                 className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-sm font-bold"
@@ -79,10 +96,11 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
               />
             </div>
           </div>
+
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+            <Label className="text-[10px] font-bold uppercase tracking-widest opacity-50">
               Password / API_Key
-            </label>
+            </Label>
             <input
               type="password"
               required
@@ -92,6 +110,7 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </div>
+
           <div className="flex gap-4 pt-4">
             <Button type="submit" fullWidth>
               [UPDATE_ENVIRONMENT]
@@ -101,7 +120,7 @@ export const EditEnvModal: React.FC<EditEnvModalProps> = ({ env, onClose, onUpda
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

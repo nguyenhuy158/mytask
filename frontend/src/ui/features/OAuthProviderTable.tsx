@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Pencil, Save, Trash2, Zap } from 'lucide-react'
+import { Pencil, Plus, Save, Star, Trash2, Zap } from 'lucide-react'
 import type {
   OAuthProvider,
   OAuthProviderUpdate,
@@ -23,16 +23,28 @@ import {
   DialogDescription,
 } from '@/ui/components/ui/dialog'
 import { Label } from '@/ui/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/ui/components/ui/popover'
 
 interface OAuthProviderTableProps {
   providers: OAuthProvider[]
   loading: boolean
   presets: OAuthProviderPreset[]
+  defaultPresets: Record<number, string>
   updating: boolean
   onUpdate: (providerId: number, values: OAuthProviderUpdate) => void
   onApplyPreset: (providerId: number, presetId: string) => void
   onAddPreset: (label: string, values: OAuthProviderUpdate) => void
+  onUpdatePreset: (
+    presetId: string,
+    label: string,
+    values: OAuthProviderUpdate,
+  ) => void
   onDeletePreset: (presetId: string) => void
+  onSetDefaultPreset: (providerId: number, presetId: string) => void
 }
 
 const EDITABLE_FIELDS: (keyof OAuthProviderUpdate)[] = [
@@ -245,14 +257,57 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
   providers,
   loading,
   presets,
+  defaultPresets,
   updating,
   onUpdate,
   onApplyPreset,
   onAddPreset,
+  onUpdatePreset,
   onDeletePreset,
+  onSetDefaultPreset,
 }) => {
   const [editing, setEditing] = useState<OAuthProvider | null>(null)
-  const [selectedPresets, setSelectedPresets] = useState<Record<number, string>>({})
+  const [selectedOverrides, setSelectedOverrides] = useState<
+    Record<number, string>
+  >({})
+  const [showNewPreset, setShowNewPreset] = useState(false)
+  const [editingPresetId, setEditingPresetId] = useState<string | null>(null)
+  const [newPresetLabel, setNewPresetLabel] = useState('')
+  const [newPresetForm, setNewPresetForm] = useState<OAuthProviderUpdate>({})
+
+  const resetNewPreset = () => {
+    setNewPresetLabel('')
+    setNewPresetForm({})
+    setShowNewPreset(false)
+    setEditingPresetId(null)
+  }
+
+  const startEditPreset = (preset: OAuthProviderPreset) => {
+    setEditingPresetId(preset.id)
+    setNewPresetLabel(preset.label)
+    setNewPresetForm({ ...preset.values })
+    setShowNewPreset(true)
+  }
+
+  const submitNewPreset = () => {
+    if (!newPresetLabel.trim()) return
+    if (editingPresetId) {
+      onUpdatePreset(editingPresetId, newPresetLabel, newPresetForm)
+    } else {
+      onAddPreset(newPresetLabel, newPresetForm)
+    }
+    resetNewPreset()
+  }
+
+  const resolvePresetId = (providerId: number): string => {
+    const override = selectedOverrides[providerId]
+    if (override !== undefined) return override
+    const defaultId = defaultPresets[providerId]
+    if (defaultId && presets.some((preset) => preset.id === defaultId)) {
+      return defaultId
+    }
+    return ''
+  }
 
   if (loading) {
     return (
@@ -322,7 +377,10 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
           </TableHeader>
           <TableBody>
             {providers.map((provider) => {
-              const selectedPresetId = selectedPresets[provider.id] || ''
+              const selectedPresetId = resolvePresetId(provider.id)
+              const defaultPresetId = defaultPresets[provider.id] || ''
+              const isDefault =
+                !!selectedPresetId && selectedPresetId === defaultPresetId
               return (
                 <TableRow
                   key={provider.id}
@@ -347,8 +405,8 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
                     <select
                       value={selectedPresetId}
                       onChange={(e) =>
-                        setSelectedPresets({
-                          ...selectedPresets,
+                        setSelectedOverrides({
+                          ...selectedOverrides,
                           [provider.id]: e.target.value,
                         })
                       }
@@ -357,13 +415,34 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
                       <option value="">— Pick preset —</option>
                       {presets.map((preset) => (
                         <option key={preset.id} value={preset.id}>
-                          {preset.label}
+                          {preset.id === defaultPresetId
+                            ? `★ ${preset.label}`
+                            : preset.label}
                         </option>
                       ))}
                     </select>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-3 flex-wrap">
+                      <Button
+                        variant={isDefault ? 'primary' : 'outline'}
+                        size="xs"
+                        disabled={!selectedPresetId}
+                        onClick={() =>
+                          onSetDefaultPreset(
+                            provider.id,
+                            isDefault ? '' : selectedPresetId,
+                          )
+                        }
+                        icon={<Star size={12} />}
+                        aria-label={
+                          isDefault
+                            ? `Clear default preset for ${provider.name}`
+                            : `Set default preset for ${provider.name}`
+                        }
+                      >
+                        {isDefault ? 'Default' : 'Set_Default'}
+                      </Button>
                       <Button
                         variant="primary"
                         size="xs"
@@ -402,6 +481,193 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
         </Table>
       </div>
 
+      <div className="border border-hairline p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-mute">
+            {editingPresetId ? 'Edit_Preset' : 'Quick_Create_Preset'}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            onClick={() =>
+              showNewPreset ? resetNewPreset() : setShowNewPreset(true)
+            }
+            icon={<Plus size={12} />}
+          >
+            {showNewPreset ? 'Cancel' : 'New_Preset'}
+          </Button>
+        </div>
+        {showNewPreset && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              submitNewPreset()
+            }}
+            className="space-y-3"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Preset_Label
+                </Label>
+                <input
+                  required
+                  placeholder="e.g. PROD_GOOGLE"
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetLabel}
+                  onChange={(e) => setNewPresetLabel(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Provider_Name
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.name ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({ ...newPresetForm, name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Client_ID
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold break-all"
+                  value={newPresetForm.client_id ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({
+                      ...newPresetForm,
+                      client_id: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Auth_Endpoint
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.auth_endpoint ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({
+                      ...newPresetForm,
+                      auth_endpoint: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Validation_Endpoint
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.validation_endpoint ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({
+                      ...newPresetForm,
+                      validation_endpoint: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Scope
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.scope ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({ ...newPresetForm, scope: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  CSS_Class
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.css_class ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({
+                      ...newPresetForm,
+                      css_class: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Body
+                </Label>
+                <input
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.body ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({ ...newPresetForm, body: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  Sequence
+                </Label>
+                <input
+                  type="number"
+                  className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-1 text-xs font-bold"
+                  value={newPresetForm.sequence ?? ''}
+                  onChange={(e) =>
+                    setNewPresetForm({
+                      ...newPresetForm,
+                      sequence:
+                        e.target.value === '' ? undefined : Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+              <input
+                type="checkbox"
+                checked={!!newPresetForm.enabled}
+                onChange={(e) =>
+                  setNewPresetForm({
+                    ...newPresetForm,
+                    enabled: e.target.checked,
+                  })
+                }
+              />
+              Enabled (Allowed)
+            </label>
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!newPresetLabel.trim()}
+                icon={<Save size={12} />}
+              >
+                {editingPresetId ? 'Update_Preset' : 'Save_Preset'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={resetNewPreset}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
+
       {presets.length > 0 && (
         <div className="border border-hairline p-4 space-y-2">
           <div className="text-[10px] font-bold uppercase tracking-widest text-mute">
@@ -411,10 +677,70 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
             {presets.map((preset) => (
               <div
                 key={preset.id}
-                className="flex items-center gap-2 border border-hairline px-2 py-1 text-[10px] font-bold uppercase"
+                className={`flex items-center gap-2 border px-2 py-1 text-[10px] font-bold uppercase ${
+                  editingPresetId === preset.id
+                    ? 'border-ink bg-surface-soft'
+                    : 'border-hairline'
+                }`}
               >
-                <span>{preset.label}</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="hover:underline"
+                      aria-label={`Preview preset ${preset.label}`}
+                    >
+                      {preset.label}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="w-96 max-w-[90vw] bg-canvas border-ink p-4 space-y-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-sm font-bold uppercase tracking-tighter">
+                        {preset.label}
+                      </div>
+                      <div className="text-[10px] font-mono break-all text-mute">
+                        UUID · {preset.id}
+                      </div>
+                    </div>
+                    <dl className="grid grid-cols-1 gap-2 text-[10px]">
+                      {EDITABLE_FIELDS.map((field) => {
+                        const raw = preset.values[field]
+                        const display =
+                          raw === undefined || raw === null || raw === ''
+                            ? '—'
+                            : typeof raw === 'boolean'
+                              ? raw
+                                ? 'true'
+                                : 'false'
+                              : String(raw)
+                        return (
+                          <div
+                            key={field}
+                            className="flex flex-col gap-0.5 border-b border-hairline pb-1 last:border-b-0"
+                          >
+                            <dt className="font-bold uppercase tracking-widest opacity-60">
+                              {field}
+                            </dt>
+                            <dd className="font-mono break-all">{display}</dd>
+                          </div>
+                        )
+                      })}
+                    </dl>
+                  </PopoverContent>
+                </Popover>
                 <button
+                  type="button"
+                  onClick={() => startEditPreset(preset)}
+                  className="hover:underline"
+                  aria-label={`Edit preset ${preset.label}`}
+                >
+                  <Pencil size={10} />
+                </button>
+                <button
+                  type="button"
                   onClick={() => onDeletePreset(preset.id)}
                   className="text-danger hover:underline"
                   aria-label={`Delete preset ${preset.label}`}

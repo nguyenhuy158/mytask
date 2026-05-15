@@ -175,11 +175,14 @@ function App() {
     providers: oauthProviders,
     loading: oauthLoading,
     presets: oauthPresets,
+    defaultPresets: oauthDefaultPresets,
     updating: oauthUpdating,
     updateProvider: updateOAuthProvider,
     applyPreset: applyOAuthPreset,
     addPreset: addOAuthPreset,
+    updatePreset: updateOAuthPreset,
     deletePreset: deleteOAuthPreset,
+    setDefaultPreset: setOAuthDefaultPreset,
   } = useOAuthProviders(activeTab === 'oauth-providers' ? selectedEnvId : null)
   const handleImportEnvs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -527,11 +530,14 @@ function App() {
                     providers={oauthProviders}
                     loading={oauthLoading}
                     presets={oauthPresets}
+                    defaultPresets={oauthDefaultPresets}
                     updating={oauthUpdating}
                     onUpdate={updateOAuthProvider}
                     onApplyPreset={applyOAuthPreset}
                     onAddPreset={addOAuthPreset}
+                    onUpdatePreset={updateOAuthPreset}
                     onDeletePreset={deleteOAuthPreset}
+                    onSetDefaultPreset={setOAuthDefaultPreset}
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">

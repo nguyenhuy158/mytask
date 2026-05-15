@@ -8,33 +8,83 @@ import type {
   OAuthProviderPreset,
 } from '../../domain/models/OAuthProvider'
 
-const presetStorageKey = (envId: number) => `oauthProviderPresets:${envId}`
+const PRESET_STORAGE_KEY = 'oauthProviderPresets:global'
+const LEGACY_PRESET_KEY_PREFIX = 'oauthProviderPresets:'
+const defaultStorageKey = (envId: number) => `oauthProviderDefaults:${envId}`
 
-const loadPresets = (envId: number): OAuthProviderPreset[] => {
+const loadPresets = (): OAuthProviderPreset[] => {
   try {
-    const raw = localStorage.getItem(presetStorageKey(envId))
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    const raw = localStorage.getItem(PRESET_STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    }
+    const merged: OAuthProviderPreset[] = []
+    const seen = new Set<string>()
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index)
+      if (
+        !key ||
+        !key.startsWith(LEGACY_PRESET_KEY_PREFIX) ||
+        key === PRESET_STORAGE_KEY
+      )
+        continue
+      try {
+        const legacy = JSON.parse(localStorage.getItem(key) || '[]')
+        if (!Array.isArray(legacy)) continue
+        legacy.forEach((preset: OAuthProviderPreset) => {
+          if (preset?.id && !seen.has(preset.id)) {
+            seen.add(preset.id)
+            merged.push(preset)
+          }
+        })
+      } catch {
+        // ignore corrupt legacy entry
+      }
+    }
+    return merged
   } catch {
     return []
   }
 }
 
-const savePresets = (envId: number, presets: OAuthProviderPreset[]) => {
-  localStorage.setItem(presetStorageKey(envId), JSON.stringify(presets))
+const savePresets = (presets: OAuthProviderPreset[]) => {
+  localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets))
+}
+
+const loadDefaults = (envId: number): Record<number, string> => {
+  try {
+    const raw = localStorage.getItem(defaultStorageKey(envId))
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : {}
+  } catch {
+    return {}
+  }
+}
+
+const saveDefaults = (envId: number, defaults: Record<number, string>) => {
+  localStorage.setItem(defaultStorageKey(envId), JSON.stringify(defaults))
 }
 
 export const useOAuthProviders = (envId: number | null) => {
   const queryClient = useQueryClient()
-  const [presets, setPresets] = useState<OAuthProviderPreset[]>([])
+  const [presets, setPresets] = useState<OAuthProviderPreset[]>(() =>
+    loadPresets(),
+  )
+  const [defaultPresets, setDefaultPresets] = useState<Record<number, string>>({})
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (envId) setPresets(loadPresets(envId))
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    else setPresets([])
+    if (envId) {
+      setDefaultPresets(loadDefaults(envId))
+    } else {
+      setDefaultPresets({})
+    }
   }, [envId])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const { data: providers = [], isLoading } = useQuery<OAuthProvider[]>({
     queryKey: ['oauthProviders', envId],
@@ -63,34 +113,62 @@ export const useOAuthProviders = (envId: number | null) => {
     },
   })
 
-  const persist = useCallback(
-    (next: OAuthProviderPreset[]) => {
+  const persist = useCallback((next: OAuthProviderPreset[]) => {
+    savePresets(next)
+    setPresets(next)
+  }, [])
+
+  const persistDefaults = useCallback(
+    (next: Record<number, string>) => {
       if (!envId) return
-      savePresets(envId, next)
-      setPresets(next)
+      saveDefaults(envId, next)
+      setDefaultPresets(next)
     },
     [envId],
   )
 
   const addPreset = useCallback(
     (label: string, values: OAuthProviderUpdate) => {
-      if (!envId || !label.trim()) return
+      if (!label.trim()) return
+      const generatedId =
+        globalThis.crypto?.randomUUID?.() ??
+        `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
       const preset: OAuthProviderPreset = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id: generatedId,
         label: label.trim(),
         values,
       }
       persist([...presets, preset])
       toast.success(`Preset "${preset.label}" saved`)
     },
-    [envId, presets, persist],
+    [presets, persist],
+  )
+
+  const updatePreset = useCallback(
+    (presetId: string, label: string, values: OAuthProviderUpdate) => {
+      if (!label.trim()) return
+      const next = presets.map((preset) =>
+        preset.id === presetId
+          ? { ...preset, label: label.trim(), values }
+          : preset,
+      )
+      persist(next)
+      toast.success(`Preset "${label.trim()}" updated`)
+    },
+    [presets, persist],
   )
 
   const deletePreset = useCallback(
     (presetId: string) => {
       persist(presets.filter((preset) => preset.id !== presetId))
+      const nextDefaults = Object.fromEntries(
+        Object.entries(defaultPresets).filter(([, value]) => value !== presetId),
+      )
+      if (Object.keys(nextDefaults).length !== Object.keys(defaultPresets).length) {
+        persistDefaults(nextDefaults)
+      }
     },
-    [presets, persist],
+    [presets, persist, defaultPresets, persistDefaults],
   )
 
   const applyPreset = useCallback(
@@ -105,13 +183,30 @@ export const useOAuthProviders = (envId: number | null) => {
     [presets, updateMutation],
   )
 
+  const setDefaultPreset = useCallback(
+    (providerId: number, presetId: string) => {
+      const next = { ...defaultPresets }
+      if (!presetId) {
+        delete next[providerId]
+      } else {
+        next[providerId] = presetId
+      }
+      persistDefaults(next)
+      toast.success(presetId ? 'Default preset set' : 'Default preset cleared')
+    },
+    [defaultPresets, persistDefaults],
+  )
+
   return {
     providers,
     loading: isLoading,
     presets,
+    defaultPresets,
     addPreset,
+    updatePreset,
     deletePreset,
     applyPreset,
+    setDefaultPreset,
     updateProvider: (providerId: number, values: OAuthProviderUpdate) =>
       updateMutation.mutate({ providerId, values }),
     updating: updateMutation.isPending,

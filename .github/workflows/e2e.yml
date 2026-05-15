@@ -1,38 +1,85 @@
 name: E2E Tests
+
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  e2e:
+    name: Playwright E2E
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
+      CI: "true"
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'pnpm'
-        cache-dependency-path: frontend/pnpm-lock.yaml
-    - uses: pnpm/action-setup@v4
-      with:
-        version: 10
-    - name: Install uv
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-    - name: Install dependencies
-      run: |
-        pnpm -C frontend install
-        cd backend && uv venv && . .venv/bin/activate && uv pip install -r requirements.txt
-    - name: Install Playwright Browsers
-      run: pnpm -C frontend exec playwright install --with-deps chromium
-    - name: Run E2E tests
-      run: |
-        cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate
-        pnpm -C frontend test:e2e
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-report
-        path: frontend/playwright-report/
-        retention-days: 30
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare backend database
+        working-directory: backend
+        run: |
+          uv run prisma db push --accept-data-loss
+          uv run prisma generate
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 30
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: frontend/test-results
+          retention-days: 14

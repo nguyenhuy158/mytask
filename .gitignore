@@ -55,6 +55,10 @@ backend/alembic.ini
 *.log
 *.swp
 
+# Local test/lint artifacts
+backend/test_output.txt
+commit_log.txt
+
 # Database
 backend/*.db
 backend/backups/

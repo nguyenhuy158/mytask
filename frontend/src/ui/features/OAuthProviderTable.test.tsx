@@ -62,7 +62,10 @@ describe('OAuthProviderTable', () => {
         onApplyPreset={onApplyPreset}
       />,
     )
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'p1' } })
+    const trigger = screen.getByRole('combobox')
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+    fireEvent.click(screen.getByRole('option', { name: 'PROD' }))
     fireEvent.click(screen.getByText('Apply'))
     expect(onApplyPreset).toHaveBeenCalledWith(3, 'p1')
   })
@@ -103,9 +106,8 @@ describe('OAuthProviderTable', () => {
         onSetDefaultPreset={onSetDefaultPreset}
       />,
     )
-    const select = screen.getByRole('combobox') as HTMLSelectElement
-    expect(select.value).toBe('p1')
-    expect(screen.getByText('★ PROD')).toBeDefined()
+    const trigger = screen.getByRole('combobox')
+    expect(trigger.textContent).toContain('★ PROD')
     fireEvent.click(screen.getByText('Default'))
     expect(onSetDefaultPreset).toHaveBeenCalledWith(3, '')
   })
@@ -122,7 +124,11 @@ describe('OAuthProviderTable', () => {
         onSetDefaultPreset={onSetDefaultPreset}
       />,
     )
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'p1' } })
+    const trigger = screen.getByRole('combobox')
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' })
+    fireEvent.click(trigger)
+    const option = screen.getByRole('option', { name: 'PROD' })
+    fireEvent.click(option)
     fireEvent.click(screen.getByText('Set_Default'))
     expect(onSetDefaultPreset).toHaveBeenCalledWith(3, 'p1')
   })
@@ -135,8 +141,8 @@ describe('OAuthProviderTable', () => {
         defaultPresets={{ 3: 'missing' }}
       />,
     )
-    const select = screen.getByRole('combobox') as HTMLSelectElement
-    expect(select.value).toBe('')
+    const trigger = screen.getByRole('combobox')
+    expect(trigger.textContent).toContain('— Pick preset —')
   })
 
   it('creates a quick preset from the inline form', () => {

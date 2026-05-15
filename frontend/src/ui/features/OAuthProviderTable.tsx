@@ -28,6 +28,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/ui/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/ui/components/ui/select'
 
 interface OAuthProviderTableProps {
   providers: OAuthProvider[]
@@ -402,25 +409,38 @@ export const OAuthProviderTable: React.FC<OAuthProviderTableProps> = ({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <select
-                      value={selectedPresetId}
-                      onChange={(e) =>
+                    <Select
+                      value={selectedPresetId || '__none__'}
+                      onValueChange={(value) =>
                         setSelectedOverrides({
                           ...selectedOverrides,
-                          [provider.id]: e.target.value,
+                          [provider.id]: value === '__none__' ? '' : value,
                         })
                       }
-                      className="bg-transparent border border-hairline px-2 py-1 text-[10px] font-bold uppercase focus:border-ink outline-none"
                     >
-                      <option value="">— Pick preset —</option>
-                      {presets.map((preset) => (
-                        <option key={preset.id} value={preset.id}>
-                          {preset.id === defaultPresetId
-                            ? `★ ${preset.label}`
-                            : preset.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="h-8 bg-transparent border border-hairline px-2 py-1 text-[10px] font-bold uppercase focus:border-ink rounded-none max-w-[260px]">
+                        <SelectValue placeholder="— Pick preset —" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-none border-ink">
+                        <SelectItem
+                          value="__none__"
+                          className="text-[10px] font-bold uppercase"
+                        >
+                          — Pick preset —
+                        </SelectItem>
+                        {presets.map((preset) => (
+                          <SelectItem
+                            key={preset.id}
+                            value={preset.id}
+                            className="text-[10px] font-bold uppercase"
+                          >
+                            {preset.id === defaultPresetId
+                              ? `★ ${preset.label}`
+                              : preset.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-3 flex-wrap">

@@ -161,3 +161,49 @@ class OdooAdapter(OdooPort):
         except Exception as e:
             print(f"Error fetching disbursement report: {e}")
             raise e
+
+    def get_oauth_providers(
+        self, url: str, db: str, username: str, password: str
+    ) -> list[Any]:
+        models, uid = self._get_models(url, db, username, password)
+        return models.execute_kw(
+            db,
+            uid,
+            password,
+            "auth.oauth.provider",
+            "search_read",
+            [[]],
+            {
+                "fields": [
+                    "id",
+                    "name",
+                    "client_id",
+                    "enabled",
+                    "body",
+                    "auth_endpoint",
+                    "validation_endpoint",
+                    "scope",
+                    "css_class",
+                    "sequence",
+                ]
+            },
+        )
+
+    def update_oauth_provider(
+        self,
+        url: str,
+        db: str,
+        username: str,
+        password: str,
+        provider_id: int,
+        values: dict,
+    ) -> Any:
+        models, uid = self._get_models(url, db, username, password)
+        return models.execute_kw(
+            db,
+            uid,
+            password,
+            "auth.oauth.provider",
+            "write",
+            [[provider_id], values],
+        )

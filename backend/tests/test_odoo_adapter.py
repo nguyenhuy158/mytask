@@ -147,3 +147,41 @@ def test_get_disbursement_report_auth_failure(odoo_adapter, mock_server_proxy):
 
     with pytest.raises(Exception, match="Authentication failed"):
         odoo_adapter.get_disbursement_report("url", "db", "user", "pass")
+
+
+def test_get_oauth_providers(odoo_adapter, mock_server_proxy):
+    mock_common = MagicMock()
+    mock_common.authenticate.return_value = 1
+    mock_models = MagicMock()
+    mock_models.execute_kw.return_value = [
+        {"id": 1, "name": "Google OAuth2", "client_id": "abc", "enabled": True}
+    ]
+    mock_server_proxy.side_effect = [mock_common, mock_models]
+
+    result = odoo_adapter.get_oauth_providers("url", "db", "user", "pass")
+    assert len(result) == 1
+    assert result[0]["name"] == "Google OAuth2"
+    args, _ = mock_models.execute_kw.call_args
+    assert args[3] == "auth.oauth.provider"
+    assert args[4] == "search_read"
+
+
+def test_update_oauth_provider(odoo_adapter, mock_server_proxy):
+    mock_common = MagicMock()
+    mock_common.authenticate.return_value = 1
+    mock_models = MagicMock()
+    mock_models.execute_kw.return_value = True
+    mock_server_proxy.side_effect = [mock_common, mock_models]
+
+    result = odoo_adapter.update_oauth_provider(
+        "url", "db", "user", "pass", 5, {"client_id": "new-id", "enabled": False}
+    )
+    assert result is True
+    mock_models.execute_kw.assert_called_with(
+        "db",
+        1,
+        "pass",
+        "auth.oauth.provider",
+        "write",
+        [[5], {"client_id": "new-id", "enabled": False}],
+    )

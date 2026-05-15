@@ -3,6 +3,7 @@ type TabType =
   | 'tasks'
   | 'envs'
   | 'crons'
+  | 'oauth-providers'
   | 'config'
   | 'backups'
   | 'webhooks'
@@ -20,6 +21,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate, onAc
   const commands = [
     { id: 'tasks', label: 'Go to Dashboard', type: 'nav' },
     { id: 'crons', label: 'Go to Cron Jobs', type: 'nav' },
+    { id: 'oauth-providers', label: 'Go to OAuth Providers', type: 'nav' },
     { id: 'envs', label: 'Go to Environments', type: 'nav' },
     { id: 'wiki', label: 'Go to Wiki', type: 'nav' },
     { id: 's3', label: 'Go to S3 Explorer', type: 'nav' },

@@ -3,6 +3,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import { promptAction } from '@/lib/toast-confirm'
 import { useTasks } from './ui/hooks/useTasks'
 import { useOdoo } from './ui/hooks/useOdoo'
+import { useOAuthProviders } from './ui/hooks/useOAuthProviders'
 import { useSystem } from './ui/hooks/useSystem'
 import { useKeyboardNavigation } from './ui/hooks/useKeyboardNavigation'
 import { wsAdapter } from './adapters/websocket/NativeWsAdapter'
@@ -18,6 +19,7 @@ import { Dashboard } from './ui/features/Dashboard'
 import { AuditLogTable } from './ui/features/AuditLogTable'
 import { HistoryTable } from './ui/features/HistoryTable'
 import { CronTable } from './ui/features/CronTable'
+import { OAuthProviderTable } from './ui/features/OAuthProviderTable'
 import { OdooShell } from './ui/features/OdooShell'
 import { DisbursementReport } from './ui/features/DisbursementReport'
 import { EnvCard } from './ui/features/EnvCard'
@@ -47,6 +49,7 @@ type TabName =
   | 'tasks'
   | 'envs'
   | 'crons'
+  | 'oauth-providers'
   | 'config'
   | 'backups'
   | 'webhooks'
@@ -62,6 +65,7 @@ function App() {
       'tasks',
       'envs',
       'crons',
+      'oauth-providers',
       'config',
       'backups',
       'webhooks',
@@ -108,6 +112,7 @@ function App() {
       | 'tasks'
       | 'envs'
       | 'crons'
+      | 'oauth-providers'
       | 'config'
       | 'backups'
       | 'webhooks'
@@ -166,6 +171,16 @@ function App() {
     requestSort,
     filteredCrons,
   } = useOdoo(searchTerm)
+  const {
+    providers: oauthProviders,
+    loading: oauthLoading,
+    presets: oauthPresets,
+    updating: oauthUpdating,
+    updateProvider: updateOAuthProvider,
+    applyPreset: applyOAuthPreset,
+    addPreset: addOAuthPreset,
+    deletePreset: deleteOAuthPreset,
+  } = useOAuthProviders(activeTab === 'oauth-providers' ? selectedEnvId : null)
   const handleImportEnvs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -246,7 +261,13 @@ function App() {
   }, [darkMode])
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab)
-    if ((activeTab === 'crons' || activeTab === 'reports') && !selectedEnvId && envs.length > 0) {
+    if (
+      (activeTab === 'crons' ||
+        activeTab === 'reports' ||
+        activeTab === 'oauth-providers') &&
+      !selectedEnvId &&
+      envs.length > 0
+    ) {
       setSelectedEnvId(envs[0].id)
     }
   }, [activeTab, selectedEnvId, envs, setSelectedEnvId])
@@ -478,6 +499,45 @@ function App() {
                       <h2 className="text-xl font-bold uppercase mb-4">Remote Shell</h2>
                       <OdooShell envId={selectedEnvId} />
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'oauth-providers' && (
+              <div className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-ink pb-4 gap-4">
+                  <div>
+                    <h1 className="text-xl md:text-2xl font-bold uppercase">
+                      OAuth Providers
+                    </h1>
+                    <p className="text-mute text-[10px] md:text-xs mt-1 md:mt-2 italic">
+                      auth.oauth.provider · Quick edit via presets
+                    </p>
+                  </div>
+                  <Select
+                    value={selectedEnvId || ''}
+                    options={envs.map((env) => ({ value: env.id, label: env.name }))}
+                    onChange={(val) => setSelectedEnvId(Number(val))}
+                    placeholder="Select Environment"
+                    className="w-full md:w-48"
+                  />
+                </div>
+                {selectedEnvId ? (
+                  <OAuthProviderTable
+                    providers={oauthProviders}
+                    loading={oauthLoading}
+                    presets={oauthPresets}
+                    updating={oauthUpdating}
+                    onUpdate={updateOAuthProvider}
+                    onApplyPreset={applyOAuthPreset}
+                    onAddPreset={addOAuthPreset}
+                    onDeletePreset={deleteOAuthPreset}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 border border-dashed border-hairline">
+                    <p className="text-ash font-bold uppercase tracking-widest text-sm">
+                      PLEASE_SELECT_AN_ENVIRONMENT
+                    </p>
                   </div>
                 )}
               </div>

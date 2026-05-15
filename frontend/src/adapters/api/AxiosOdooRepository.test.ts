@@ -29,4 +29,21 @@ describe('AxiosOdooRepository', () => {
     const result = await repo.testConnection({} as any)
     expect(result).toEqual(mockRes)
   })
+
+  it('getOAuthProviders fetches list', async () => {
+    const mockData = [{ id: 1, name: 'Google OAuth2' }]
+    mockedAxios.get.mockResolvedValue({ data: mockData })
+    const result = await repo.getOAuthProviders(2)
+    expect(result).toEqual(mockData)
+    expect(mockedAxios.get).toHaveBeenCalledWith('/api/odoo/2/oauth-providers')
+  })
+
+  it('updateOAuthProvider sends PATCH with values', async () => {
+    mockedAxios.patch.mockResolvedValue({ data: { status: 'success' } })
+    await repo.updateOAuthProvider(2, 5, { client_id: 'abc', enabled: false })
+    expect(mockedAxios.patch).toHaveBeenCalledWith(
+      '/api/odoo/2/oauth-providers/5',
+      { client_id: 'abc', enabled: false },
+    )
+  })
 })

@@ -2,6 +2,7 @@ import axios from 'axios'
 import type { IOdooRepository } from '../../ports/IOdooRepository'
 import type { OdooEnv, DisbursementReport } from '../../domain/models/OdooEnv'
 import type { Cron } from '../../domain/models/Cron'
+import type { OAuthProvider, OAuthProviderUpdate } from '../../domain/models/OAuthProvider'
 const API_BASE = '/api'
 export class AxiosOdooRepository implements IOdooRepository {
   async getEnvs(): Promise<OdooEnv[]> {
@@ -47,6 +48,17 @@ export class AxiosOdooRepository implements IOdooRepository {
   async getDisbursementReport(envId: number): Promise<DisbursementReport[]> {
     const res = await axios.get(`${API_BASE}/odoo/${envId}/disbursement-report`)
     return res.data
+  }
+  async getOAuthProviders(envId: number): Promise<OAuthProvider[]> {
+    const res = await axios.get(`${API_BASE}/odoo/${envId}/oauth-providers`)
+    return res.data
+  }
+  async updateOAuthProvider(
+    envId: number,
+    providerId: number,
+    values: OAuthProviderUpdate,
+  ): Promise<void> {
+    await axios.patch(`${API_BASE}/odoo/${envId}/oauth-providers/${providerId}`, values)
   }
   async exportEnvs(): Promise<OdooEnv[]> {
     const res = await axios.get(`${API_BASE}/envs/export`)

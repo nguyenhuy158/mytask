@@ -105,3 +105,53 @@ async def test_odoo_coverage_boost(
     )
     await odoo_service.run_cron(1, 123)
     await odoo_service.execute_remote_shell(1, "print(1)")
+
+
+@pytest.mark.asyncio
+async def test_get_oauth_providers(odoo_service, mock_odoo_adapter, mock_prisma_adapter):
+    mock_env = MagicMock(id=1, url="url", db="db", username="u", password="p")
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = mock_env
+    mock_odoo_adapter.get_oauth_providers.return_value = [{"id": 1, "name": "G"}]
+
+    result = await odoo_service.get_oauth_providers(1)
+    assert result == [{"id": 1, "name": "G"}]
+    mock_odoo_adapter.get_oauth_providers.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_oauth_providers_missing_env(odoo_service, mock_prisma_adapter):
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = None
+    with pytest.raises(Exception, match="Environment not found"):
+        await odoo_service.get_oauth_providers(99)
+
+
+@pytest.mark.asyncio
+async def test_update_oauth_provider_filters_fields(
+    odoo_service, mock_odoo_adapter, mock_prisma_adapter
+):
+    mock_env = MagicMock(id=1, url="url", db="db", username="u", password="p")
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = mock_env
+    mock_odoo_adapter.update_oauth_provider.return_value = True
+
+    await odoo_service.update_oauth_provider(
+        1, 5, {"client_id": "x", "enabled": True, "ignored": "y"}
+    )
+    called_values = mock_odoo_adapter.update_oauth_provider.call_args[0][5]
+    assert called_values == {"client_id": "x", "enabled": True}
+
+
+@pytest.mark.asyncio
+async def test_update_oauth_provider_no_valid_fields(
+    odoo_service, mock_prisma_adapter
+):
+    mock_env = MagicMock(id=1, url="url", db="db", username="u", password="p")
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = mock_env
+    with pytest.raises(Exception, match="No valid fields"):
+        await odoo_service.update_oauth_provider(1, 5, {"bogus": "x"})
+
+
+@pytest.mark.asyncio
+async def test_update_oauth_provider_missing_env(odoo_service, mock_prisma_adapter):
+    mock_prisma_adapter.get_odoo_env_by_id.return_value = None
+    with pytest.raises(Exception, match="Environment not found"):
+        await odoo_service.update_oauth_provider(1, 5, {"client_id": "x"})

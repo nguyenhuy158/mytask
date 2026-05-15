@@ -11,6 +11,14 @@ vi.mock('./TrendCharts', () => ({
   LargeTrendChart: () => <div data-testid="trend-chart" />
 }))
 
+const formatDate = (offsetDays: number, hour: number, minute: number) => {
+  const d = new Date()
+  d.setDate(d.getDate() - offsetDays)
+  d.setHours(hour, minute, 0, 0)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(hour)}:${pad(minute)}:00`
+}
+
 describe('DisbursementReport Component', () => {
   const mockReport: IDisbursementReport[] = [
     {
@@ -18,8 +26,8 @@ describe('DisbursementReport Component', () => {
       name: 'REC/001',
       project_name: 'Project A',
       kind: 'fast',
-      confirm_date: '2026-05-08 08:00:00',
-      approve_date: '2026-05-08 08:10:00',
+      confirm_date: formatDate(0, 8, 0),
+      approve_date: formatDate(0, 8, 10),
       approval_duration: 10,
       approve_uid: [1, 'Admin']
     },
@@ -28,8 +36,8 @@ describe('DisbursementReport Component', () => {
       name: 'REC/002',
       project_name: 'Project B',
       kind: 'slow',
-      confirm_date: '2026-05-07 08:00:00',
-      approve_date: '2026-05-07 09:00:00',
+      confirm_date: formatDate(1, 8, 0),
+      approve_date: formatDate(1, 9, 0),
       approval_duration: 60,
       approve_uid: [1, 'Admin']
     }

@@ -377,6 +377,34 @@ async def toggle_odoo_cron(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/odoo/{env_id}/oauth-providers")
+async def get_odoo_oauth_providers(
+    env_id: int, service: OdooService = Depends(get_odoo_service)
+):
+    try:
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        return await service.get_oauth_providers(env.id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.patch("/odoo/{env_id}/oauth-providers/{provider_id}")
+async def update_odoo_oauth_provider(
+    env_id: int,
+    provider_id: int,
+    values: dict,
+    service: OdooService = Depends(get_odoo_service),
+):
+    try:
+        target_id = env_id if env_id > 0 else None
+        env = await service.get_effective_env(target_id)
+        await service.update_oauth_provider(env.id, provider_id, values)
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.post("/odoo/{env_id}/crons/{cron_id}/run")
 async def run_odoo_cron(
     env_id: int, cron_id: int, service: OdooService = Depends(get_odoo_service)

@@ -65,6 +65,8 @@ def override_dependencies():
     mock_odoo_service.set_default_env.return_value = None
     mock_odoo_service.execute_remote_shell.return_value = "ok"
     mock_odoo_service.import_envs.return_value = []
+    mock_odoo_service.get_oauth_providers.return_value = []
+    mock_odoo_service.update_oauth_provider.return_value = True
 
     mock_prisma_adapter.get_s3_configs.return_value = []
     mock_prisma_adapter.create_s3_config.return_value = {"id": 1}
@@ -164,6 +166,10 @@ async def test_api_massive_coverage(override_dependencies):
             await ac.get("/odoo/1/disbursement-report")
             await ac.post("/odoo/1/crons/1/toggle?active=true")
             await ac.post("/odoo/1/crons/1/run")
+            await ac.get("/odoo/1/oauth-providers")
+            await ac.patch(
+                "/odoo/1/oauth-providers/5", json={"client_id": "new-id"}
+            )
             await ac.get("/s3-configs")
             await ac.post(
                 "/s3-configs",

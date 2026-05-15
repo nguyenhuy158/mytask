@@ -1,5 +1,6 @@
 import type { OdooEnv, DisbursementReport } from '../domain/models/OdooEnv'
 import type { Cron } from '../domain/models/Cron'
+import type { OAuthProvider, OAuthProviderUpdate } from '../domain/models/OAuthProvider'
 export interface IOdooRepository {
   getEnvs(): Promise<OdooEnv[]>
   addEnv(env: Partial<OdooEnv>): Promise<OdooEnv>
@@ -13,6 +14,8 @@ export interface IOdooRepository {
   toggleCron(envId: number, cronId: number, active: boolean): Promise<void>
   runCron(envId: number, cronId: number): Promise<void>
   getDisbursementReport(envId: number): Promise<DisbursementReport[]>
+  getOAuthProviders(envId: number): Promise<OAuthProvider[]>
+  updateOAuthProvider(envId: number, providerId: number, values: OAuthProviderUpdate): Promise<void>
   exportEnvs(): Promise<OdooEnv[]>
   importEnvs(envs: Partial<OdooEnv>[]): Promise<OdooEnv[]>
 }

@@ -117,6 +117,24 @@ class OdooPort(ABC):
     ) -> list[Any]:
         pass
 
+    @abstractmethod
+    def get_oauth_providers(
+        self, url: str, db: str, username: str, password: str
+    ) -> list[Any]:
+        pass
+
+    @abstractmethod
+    def update_oauth_provider(
+        self,
+        url: str,
+        db: str,
+        username: str,
+        password: str,
+        provider_id: int,
+        values: dict,
+    ) -> Any:
+        pass
+
 
 class BroadcastPort(ABC):
     @abstractmethod

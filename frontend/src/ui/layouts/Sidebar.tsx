@@ -11,6 +11,7 @@ import {
   Settings,
   Archive,
   Webhook,
+  ShieldCheck,
 } from 'lucide-react'
 interface SidebarProps {
   activeTab: string
@@ -38,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const tabs = [
     { id: 'tasks', label: t('sidebar.task_manager'), icon: Layout },
     { id: 'crons', label: 'Cron Jobs', icon: Calendar },
+    { id: 'oauth-providers', label: 'OAuth Providers', icon: ShieldCheck },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'envs', label: 'Environments', icon: Globe },
     { id: 'wiki', label: 'Wiki', icon: Book },

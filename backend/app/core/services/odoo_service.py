@@ -113,3 +113,35 @@ class OdooService:
         return self.odoo_port.get_disbursement_report(
             env.url, env.db, env.username, env.password
         )
+
+    async def get_oauth_providers(self, env_id: int) -> list[Any]:
+        env = await self.repository.get_odoo_env_by_id(env_id)
+        if not env:
+            raise Exception("Environment not found")
+        return self.odoo_port.get_oauth_providers(
+            env.url, env.db, env.username, env.password
+        )
+
+    async def update_oauth_provider(
+        self, env_id: int, provider_id: int, values: dict
+    ) -> Any:
+        env = await self.repository.get_odoo_env_by_id(env_id)
+        if not env:
+            raise Exception("Environment not found")
+        allowed_fields = {
+            "name",
+            "client_id",
+            "enabled",
+            "body",
+            "auth_endpoint",
+            "validation_endpoint",
+            "scope",
+            "css_class",
+            "sequence",
+        }
+        filtered = {k: v for k, v in values.items() if k in allowed_fields}
+        if not filtered:
+            raise Exception("No valid fields to update")
+        return self.odoo_port.update_oauth_provider(
+            env.url, env.db, env.username, env.password, provider_id, filtered
+        )

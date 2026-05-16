@@ -1,0 +1,16 @@
+title = "mytask gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Files and patterns allowlisted from scanning"
+paths = [
+    '''\.secrets\.baseline$''',
+    '''pnpm-lock\.yaml$''',
+    '''uv\.lock$''',
+    '''package-lock\.json$''',
+]
+regexes = [
+    '''(?i)(test|mock|fake|example|placeholder|dummy|sample)[-_]?(password|token|secret|key)''',
+]

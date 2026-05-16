@@ -25,8 +25,13 @@ jobs:
     - name: Install Playwright Browsers
       run: pnpm -C frontend exec playwright install --with-deps chromium
     - name: Run E2E tests
+      env:
+        DATABASE_URL: file:./tasks.db
       run: |
-        cd backend && uv run prisma db push --accept-data-loss && uv run prisma generate
+        cd backend
+        uv run prisma db push --accept-data-loss
+        uv run prisma generate
+        cd ..
         pnpm -C frontend test:e2e
     - uses: actions/upload-artifact@v4
       if: always()

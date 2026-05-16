@@ -1,14 +1,16 @@
 services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:./tasks.db
+      - DATABASE_URL=file:/app/data/tasks.db
     volumes:
       - sqlite_data:/app/backups
-      - sqlite_db:/app/tasks.db
+      - sqlite_db:/app/data
+    expose:
+      - "8000"
     restart: always
 
   frontend:
@@ -17,6 +19,8 @@ services:
       dockerfile: Dockerfile.prod
     depends_on:
       - backend
+    expose:
+      - "80"
     restart: always
 
 volumes:

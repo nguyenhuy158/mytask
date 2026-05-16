@@ -5,58 +5,85 @@ import requests
 
 API_URL = "http://localhost:8000/tasks"
 
+SKIP_DIRECTORIES = {
+    "node_modules",
+    ".venv",
+    ".git",
+    "__pycache__",
+    "dist",
+    "build",
+}
+
+SUPPORTED_EXTENSIONS = (".py", ".js", ".ts", ".tsx", ".go", ".rs", ".sql", ".md")
+
+MARKER_PATTERN = re.compile(
+    r"(?:#|//|--|/\*)\s*"
+    r"(TODO|FIXME|XXX|HACK)\b"
+    r"(?:\(([^)]+)\))?"
+    r"\s*:?\s*"
+    r"(.*?)"
+    r"(?:\s*\*/)?\s*$",
+    re.IGNORECASE,
+)
+
 
 def scan_todos(directory):
     todos = []
-    # Simplified regex for TODO comments
-    pattern = re.compile(r"(?:#|//|--)\s*TODO:\s*(.*)", re.IGNORECASE)
-
     for root, _dirs, files in os.walk(directory):
-        if any(
-            d in root
-            for d in ["node_modules", ".venv", ".git", "__pycache__", "dist", "build"]
-        ):
+        if any(skipped in root.split(os.sep) for skipped in SKIP_DIRECTORIES):
             continue
 
-        for file in files:
-            if file.endswith(
-                (".py", ".js", ".ts", ".tsx", ".go", ".rs", ".sql", ".md")
-            ):
-                path = os.path.join(root, file)
-                try:
-                    with open(path, encoding="utf-8") as f:
-                        for i, line in enumerate(f, 1):
-                            match = pattern.search(line)
-                            if match:
-                                todos.append(
-                                    {
-                                        "name": f"TODO: {match.group(1).strip()}",
-                                        "description": f"Found in {file} at line {i}",
-                                        "task_type": "code_todo",
-                                        "priority": 3,
-                                    }
-                                )
-                except Exception as e:
-                    print(f"Error reading {path}: {e}")
+        for file_name in files:
+            if not file_name.endswith(SUPPORTED_EXTENSIONS):
+                continue
+
+            path = os.path.join(root, file_name)
+            try:
+                with open(path, encoding="utf-8") as source:
+                    for line_number, line in enumerate(source, 1):
+                        match = MARKER_PATTERN.search(line)
+                        if not match:
+                            continue
+
+                        marker = match.group(1).upper()
+                        assignee = match.group(2)
+                        body = match.group(3).strip() if match.group(3) else ""
+
+                        name = f"{marker}: {body}" if body else marker
+                        description_parts = [
+                            f"Found in {file_name} at line {line_number}"
+                        ]
+                        if assignee:
+                            description_parts.append(f"Assigned to {assignee.strip()}")
+
+                        todos.append(
+                            {
+                                "name": name,
+                                "description": " | ".join(description_parts),
+                                "task_type": "code_todo",
+                                "priority": 3,
+                            }
+                        )
+            except OSError as error:
+                print(f"Error reading {path}: {error}")
     return todos
 
 
 def sync_to_backend(todos):
-    # Get existing tasks to avoid duplicates
     try:
         existing_tasks = requests.get(API_URL).json()
-        existing_names = {t["name"] for t in existing_tasks}
+        existing_names = {task["name"] for task in existing_tasks}
     except Exception:
         existing_names = set()
 
     for todo in todos:
         if todo["name"] not in existing_names:
             try:
-                res = requests.post(API_URL, json=todo)
-                if res.status_code == 200:
+                response = requests.post(API_URL, json=todo)
+                if response.status_code == 200:
                     print(f"Created task: {todo['name']}")
-            except Exception as e:
-                print(f"Failed to create task {todo['name']}: {e}")
+            except Exception as error:
+                print(f"Failed to create task {todo['name']}: {error}")
 
 
 if __name__ == "__main__":
